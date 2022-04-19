@@ -62,9 +62,10 @@ public class CameraController : MonoBehaviour
         EndimonRotations[3] = new Quaternion(10, 70, 0, 0);
     }
 
-    // Update is called once per frame
+    //Keep the camera moving or in the spot that it should be based upon the parameters
     void Update()
     {   
+        //Zoom in on a random Endimon when the timer hits 0
         if (GameStatus == "PlayerAwaitTurn" && Timer > 0)
         {
             if(ZoomedIn == true)
@@ -104,12 +105,13 @@ public class CameraController : MonoBehaviour
                 }
             }
         }
+        //When the player wins, zoom in on the Endimon they have on the field
         else if(GameStatus == "Winner")
         {
             MainCamera.transform.position = new Vector3(12.84f, 26.17f, 47f);
             MainCamera.transform.rotation = Quaternion.Euler(20, -90, 0);
         }
-
+        //When a player loses, zoom in on the AI Endimon on the field
         else if(GameStatus == "Loser")
         {
             MainCamera.transform.position = new Vector3(-13.23f, 26.17f, 47f);

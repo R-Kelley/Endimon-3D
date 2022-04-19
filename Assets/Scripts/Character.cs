@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Character
 {
-    private string PlayerName = "You";      //The name that will be used in the text box
     private Endimon[] PlayerTeam;           //Character's team of 4 Endimon
     private Item[] PlayerItems;             //Character's selected items
     private Endimon ActivePlayerEndimon1;   //Character's first Endimon in battle

@@ -212,16 +212,17 @@ public class Endimon
 
     //Function will calculate the damage of the move, then return the correct damage
     //This function does not handle the animations or timing sequence as of yet
-    public int UseDamageMove(Endimon Attacker, Move DamageMove, Endimon Defender, Image[] GlobalStatuses)
+    public int UseDamageMove(Endimon Attacker, Move DamageMove, Endimon Defender, Image[] GlobalStatuses, bool justCalculate)
     {
         float TotalDamage = 0f;
 
         //Confusion status will make Endimon hit themselves with their own attack 70% of the time
-        if(Statuses[1] == StatusEffects.Confusion)
+        if(Statuses[1] == StatusEffects.Confusion && !justCalculate)
         {
             int rand = Random.Range(1, 11);
             if(rand > 3)
             {
+                Debug.Log("CONFUSED!");
                 Defender = Attacker;
             }
         }
@@ -234,7 +235,7 @@ public class Endimon
 
         //Checking for "ShadowCast" effect, if a non shadow type move is used then the endimon has a chance of missing the attack (0 damage)
         Color32 black = new Color32(30, 30, 30, 255);
-        if ((GlobalStatuses[8].color == black || GlobalStatuses[9].color == black) && DamageMove.GetMoveType() != Endimontypes.Shadow)
+        if ((GlobalStatuses[8].color == black || GlobalStatuses[9].color == black) && DamageMove.GetMoveType() != Endimontypes.Shadow && !justCalculate)
         {
             int rand = Random.Range(1, 11);
             if(rand < 3)
@@ -244,7 +245,7 @@ public class Endimon
         }
 
         //Checks for "Speedray" effect, if so, this has a 33% chance of doing no damage/missing
-        if(Defender.GetEndimonPostiveEffect() == StatusEffects.Speedray)
+        if(Defender.GetEndimonPostiveEffect() == StatusEffects.Speedray && !justCalculate)
         {
             int rand = Random.Range(1, 4);
             //Return 0 if attack missed
@@ -257,15 +258,15 @@ public class Endimon
         //If under the item influence of AttackUp, an extra 15 damage is pre-given
         if(Statuses[0] == StatusEffects.AttackUp)
         {
-            TotalDamage += 15f;
+            TotalDamage += 20f;
         }
 
         //Calculate damage that the move should do based upon given stats
         TotalDamage += Attacker.GetAttack() + DamageMove.GetDamage();
 
-
+        //Move does more damage baseed on the enemy being under a negative effect
         if(DamageMove.GetDoesBoost() && Defender.Statuses[1] != StatusEffects.Nothing) {
-            TotalDamage += 20;
+            TotalDamage += 30;
         }
 
         //Check to see if any type multipliers should apply in this case
@@ -297,21 +298,21 @@ public class Endimon
         //Checking for "Screech" status, if applied to attacker it will boost the damage by 25
         if (Defender.GetEndimonPostiveEffect() == StatusEffects.Screech)
         {
-            TotalDamage += 25f;
+            TotalDamage += 30f;
         }
 
         //Checking if the "Ring of Fire" global effect is in play, adding 20 damage to fire element moves
         Color32 red = new Color32(11, 199, 195, 255);
         if ((GlobalStatuses[8].color == red || GlobalStatuses[9].color == red) && DamageMove.GetMoveType() == Endimontypes.Pyro)
         {
-            TotalDamage += 20;
+            TotalDamage += 35f;
         }
 
         TotalDamage -= Defender.GetDefense();
 
         if(Attacker.GetEndimonPostiveEffect() == StatusEffects.HeatUp)
         {
-            TotalDamage = TotalDamage * 2;
+            TotalDamage = TotalDamage * 1.5f;
         }
 
         if(TotalDamage < 0)
@@ -345,7 +346,6 @@ public class Endimon
             if(rand <= 50)
             {
                 Debug.Log("Sleep attack missed");
-                //*Should probably sync this up somehow to indicate this
                 return -1;
             }
             else

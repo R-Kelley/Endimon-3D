@@ -73,7 +73,7 @@ public class MainMenuController : MonoBehaviour
         }
 
         //PRESSING ENTER WILL CLICK THE CURRENT SELECTION
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(Input.GetKeyDown(KeyCode.Space))
         {
             if(UserSelection == Selection.Campaign)
             {
@@ -104,6 +104,12 @@ public class MainMenuController : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Z))
         {
             GameProfile.BeatALevel();
+        }
+
+        //CHEATING BUTTON, PRESSING X WILL DECREASE THE LEVEL YOU BEAT TO YOUR "ACCOUNT"
+        if(Input.GetKeyDown(KeyCode.X))
+        {
+            GameProfile.HighestFinishedLevel--;
         }
     }
 
@@ -171,6 +177,7 @@ public class MainMenuController : MonoBehaviour
         Credits.SetActive(false);
         MainScreen.SetActive(true);
         ScreenImage.color = new Color32(0, 0, 0, 150);
+        AudioSource.PlayClipAtPoint(Audio.ButtonCancel, GameObject.Find("MainCamera").transform.position);
     }
 
     //Set position of Arrow to Campaign

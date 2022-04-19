@@ -50,32 +50,32 @@ public static class GameProfile
     {
         if(selection == 0)
         {
-            return new Endimon("Corerosion", 1, Endimon.Endimontypes.Earth, "Utility", 30, 35, 400, "Chomp", "Rollout",
-            "Rejuvenation", Endimon.Endimontypes.Normal, Endimon.Endimontypes.Earth, 45, 50, "Restores a small amount of health to a teammate", false, false, true, false);
+            return new Endimon("Corerosion", 1, Endimon.Endimontypes.Earth, "Utility", 30, 35, 400, "Bite", "Rollout",
+            "Rejuvenation", Endimon.Endimontypes.Normal, Endimon.Endimontypes.Earth, 45, 50, "Restores a part of an Endimon's missing HP", false, false, true, false);
         }
         else if(selection == 1)
         {
-            return new Endimon("Serpbolt", 2, Endimon.Endimontypes.Electro, "Utility", 40, 30, 400, "Gnaw", "Electric Bite",
+            return new Endimon("Serpbolt", 2, Endimon.Endimontypes.Electro, "Utility", 40, 30, 400, "Gnaw", "Electric Chomp",
             "Noxious Fumes", Endimon.Endimontypes.Normal, Endimon.Endimontypes.Electro, 40, 45, "Has a chance to apply sleep status to enemy Endimon", false, false, true, true);
         }
         else if(selection == 2)
         {
-            return new Endimon("Scorcher", 3, Endimon.Endimontypes.Pyro, "Attacker", 50, 30, 350, "Blaze Slash", "Smoldering Clap",
+            return new Endimon("Scorcher", 3, Endimon.Endimontypes.Pyro, "Attacker", 50, 30, 300, "Blaze Slash", "Smoldering Clap",
         "Ring of Fire", Endimon.Endimontypes.Pyro, Endimon.Endimontypes.Shadow, 50, 45, "Global Effect: Pyro moves receive a damage boost", true, false, false, false);
         }
         else if (selection == 3)
         {
-            return new Endimon("Snowshade", 4, Endimon.Endimontypes.Frost, "Tank", 40, 40, 400, "Frozen Jab", "Dry Ice",
-            "Icicle Baracade", Endimon.Endimontypes.Frost, Endimon.Endimontypes.Pyro, 45, 40, "Boosts the defense of the target for two rounds", true, false, true, false);
+            return new Endimon("Snowshade", 4, Endimon.Endimontypes.Frost, "Tank", 40, 40, 350, "Frozen Jab", "Dry Ice",
+            "Icicle Baracade", Endimon.Endimontypes.Frost, Endimon.Endimontypes.Pyro, 45, 40, "Boosts the defense of the target for two turns", true, false, true, false);
         }
         else if (selection == 4)
         {
-            return new Endimon("Demonican", 5, Endimon.Endimontypes.Shadow, "Attacker", 45, 25, 400, "Toxic Grasp", "Deathly Spin",
+            return new Endimon("Demonican", 5, Endimon.Endimontypes.Shadow, "Attacker", 45, 25, 350, "Toxic Grasp", "Deathly Spin",
             "Shadowcast", Endimon.Endimontypes.Earth, Endimon.Endimontypes.Shadow, 40, 50, "Global Effect: All non-shadow moves have a chance of missing", false, true, false, false);
         }
         else if (selection == 5)
         {
-            return new Endimon("Fruitfly", 6, Endimon.Endimontypes.Shadow, "Tank", 35, 30, 450, "Poison Spit", "Fang",
+            return new Endimon("Fruitfly", 6, Endimon.Endimontypes.Shadow, "Tank", 35, 30, 400, "Poison Spit", "Fang",
             "Screech", Endimon.Endimontypes.Shadow, Endimon.Endimontypes.Normal, 40, 45, "Boosts the attack of the target for two rounds", false, false, true, false);
         }
         else if (selection == 6)
@@ -86,12 +86,12 @@ public static class GameProfile
         else if (selection == 7)
         {
             return new Endimon("Prickly", 8, Endimon.Endimontypes.Earth, "Attacker", 50, 25, 350, "Volt Charge", "Thorn Blast",
-            "Synthesis", Endimon.Endimontypes.Electro, Endimon.Endimontypes.Earth, 50, 60, "Applies a healing aura that heals a tiny bit over 4 rounds", false, true, true, false);
+            "Synthesis", Endimon.Endimontypes.Electro, Endimon.Endimontypes.Earth, 50, 60, "Applies a healing aura that heals a small bit over 4 turns", false, true, true, false);
         }
         else if (selection == 8)
         {
-            return new Endimon("Coalfire", 9, Endimon.Endimontypes.Pyro, "Balanced", 40, 35, 400, "Scratch", "Flame Ball",
-            "Heating Up", Endimon.Endimontypes.Normal, Endimon.Endimontypes.Pyro, 45, 50, "Targetted Endimon's next attack will do double damage", false, false, true, false);
+            return new Endimon("Coalfire", 9, Endimon.Endimontypes.Pyro, "Balanced", 40, 30, 350, "Scratch", "Flame Ball",
+            "Heating Up", Endimon.Endimontypes.Normal, Endimon.Endimontypes.Pyro, 45, 50, "Targetted Endimon's next attack will do drastically more damage", false, false, true, false);
         }
         else if (selection == 9)
         {
@@ -106,35 +106,35 @@ public static class GameProfile
     {
         if (selection == 0)
         {
-            return new Item("Power-Up Candy", "Gives a small attack boost to the targetted Endimon", 3, true, Endimon.StatusEffects.AttackUp);
+            return new Item("Power-Up Candy", "Gives a small attack boost to the targetted Endimon for 3 turns", 3, true, false, Endimon.StatusEffects.AttackUp);
         }
         else if(selection == 1)
         {
-            return new Item("Bulk-Up Candy", "Gives a small defense boost to the targetted Endimon", 3, true, Endimon.StatusEffects.DefenseUp);
+            return new Item("Bulk-Up Candy", "Gives a small defense boost to the targetted Endimon for 3 turns", 3, true, false, Endimon.StatusEffects.DefenseUp);
         }
         else if (selection == 2)
         {
-            return new Item("Paralyze Candy", "All non-normal type moves disabled on the selected target for 2 turns", 2, false, Endimon.StatusEffects.Paralyze);
+            return new Item("Paralyze Candy", "Applies paralysis status which negates all non-normal type damage for 2 turns", 2, false, false, Endimon.StatusEffects.Paralyze);
         }
         else if (selection == 3)
         {
-            return new Item("Poison Candy", "Applies an overtime damage effect onto the target for 3 rounds. Also slightly lowers defense permanently every turn", 3, false, Endimon.StatusEffects.Poison);
+            return new Item("Poison Candy", "Applies poison status which reduces HP and defense overtime for 3 turns", 3, false, false, Endimon.StatusEffects.Poison);
         }
         else if (selection == 4)
         {
-            return new Item("Sleep Candy", "Applies sleep status to the target Endimon for a turn", 1, false, Endimon.StatusEffects.Sleep);
+            return new Item("Sleep Candy", "Applies sleep status which renders the target turn useless", 1, false, false, Endimon.StatusEffects.Sleep);
         }
         else if (selection == 5)
         {
-            return new Item("Confusion Candy", "Applies confusion status that has chance to make target attack itself", 2, false, Endimon.StatusEffects.Confusion);
+            return new Item("Confusion Candy", "Applies confusion status that has chance to make target attack itself for 2 turns", 2, false, false, Endimon.StatusEffects.Confusion);
         }
         else if (selection == 6)
         {
-            return new Item("Berry Candy", "Restores a quarter of the Endimon's max HP", 0, true, Endimon.StatusEffects.HealthRestore);
+            return new Item("Berry Candy", "Restores a quarter of the Endimon's max HP", 0, true, true, Endimon.StatusEffects.HealthRestore);
         }
         else if (selection == 7)
         {
-            return new Item("Spice-Berry Candy", "Restores half of Endimon's max HP but permanetly reduces defense", 0, true, Endimon.StatusEffects.LargeHealthRestore);
+            return new Item("Spice-Berry Candy", "Restores half of Endimon's max HP but permanetly lowers defense", 0, true, true, Endimon.StatusEffects.LargeHealthRestore);
         }
         Debug.Log("Returned a null item");
         return null;
@@ -178,7 +178,7 @@ public static class GameProfile
             Items[1] = CreateItemInstance(6);
             Items[2] = CreateItemInstance(0);
             Team = CreateTeam(CreateEndimonInstance(0), CreateEndimonInstance(9), CreateEndimonInstance(7), CreateEndimonInstance(1));
-            return new Trainer("Laurel", "Her wisdom in battling is proven in the many battles she has won. Her core of hard hitting Endimon tend to be tough to take down with her all of her healing.",
+            return new Trainer("Laurel", "Her wisdom in battling is proven in the amount of battles she has won. Her core of hard hitting Endimon tend to be tough to take down with her all of her healing.",
                 CharacterSelectController.DifficultySelection.Medium, Team, Items);
         }
         else if (selection == 4)
@@ -190,7 +190,7 @@ public static class GameProfile
             Items[3] = CreateItemInstance(1);
             Items[4] = CreateItemInstance(1);
             Team = CreateTeam(CreateEndimonInstance(4), CreateEndimonInstance(7), CreateEndimonInstance(3), CreateEndimonInstance(0));
-            return new Trainer("Michaela", "With years of experience, Michaela is a hard opponent to take down. With a very well rounded team, she expects to inflict high damage with her beefed up Endimon.",
+            return new Trainer("Michaela", "With years of experience, Michaela is a hard opponent to take down. With a very well rounded team, she expects to inflict high damage with her strengthened up Endimon.",
                 CharacterSelectController.DifficultySelection.Hard, Team, Items);
         }
         else if (selection == 5)

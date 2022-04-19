@@ -58,7 +58,7 @@ public class CharacterSelectController : MonoBehaviour
         Roster = GameProfile.Roster;
         SelectedEndimonColors = new Color32[3];     //Colors of an Endimon's type as well as their 2 move's type (move 3 is always their own)
         XValues = new int[] { -28 };
-        YValues = new int[] { 8, -9, -27 };
+        YValues = new int[] { 20, -9, -36 };
         ArrowMover = Arrow.GetComponent<RectTransform>();
         EndimonNumber = 0;
         ChangeCharacterHover();                     //Display the first Endimon's stats
@@ -104,7 +104,7 @@ public class CharacterSelectController : MonoBehaviour
         }
 
         //PRESSING SPACE WILL ADD AN ENDIMON TO THE TEAM
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetKeyDown(KeyCode.LeftShift))
         {
             if (Player.CheckPlayerTeam() < 4)
             {
@@ -113,7 +113,7 @@ public class CharacterSelectController : MonoBehaviour
         }
 
         //PRESSING ENTER WILL TRY AND CONTINUE (ONLY IF 4 ENDIMON IN TEAM)
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             if(Player.CheckPlayerTeam() >= 4)
             {
@@ -258,6 +258,11 @@ public class CharacterSelectController : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
+    public void ButtonHighlight()
+    {
+        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
+    }
+
     //Sets the starting difficulty upon load. Normally set to easy as default but must act accordingly if it's a camapaign battle
     public void SetInitialDifficulty()
     {
@@ -272,7 +277,7 @@ public class CharacterSelectController : MonoBehaviour
         else
         {
             UserSelection = DifficultySelection.Easy;
-            ChangeDifficultyHover();
+            MovePointer(XValues[0], YValues[0]);
         }
     }
 
@@ -386,7 +391,6 @@ public class CharacterSelectController : MonoBehaviour
     //Change the posistion of the pointer based upon the selection
     public void MovePointer(int xChange, int yChange)
     {
-        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
         ArrowMover.localPosition = new Vector3(xChange, yChange, 0);
     }
 }

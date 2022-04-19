@@ -87,7 +87,7 @@ public class CampaignMapController : MonoBehaviour
         }
 
         //PRESSING ENTER INITIATES THE BATTLE
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(Input.GetKeyDown(KeyCode.Space))
         {
             ChallengeBtnClicked();
         }
@@ -173,6 +173,16 @@ public class CampaignMapController : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
+    public void BackBtnHighlight()
+    {
+        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
+    }
+
+    public void ChallengeBtnHighlight()
+    {
+        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
+    }
+
     //Change around all the trainer text once a new one is highlighted, as well as telling the button highlighter to move
     public void UpdateScreen()
     {
@@ -201,33 +211,34 @@ public class CampaignMapController : MonoBehaviour
 
         if(LevelSelected == 1)
         {
-            MoveHover(-811, 285);
+            MoveHover(-823, 292, 180, 90);
         }
         if (LevelSelected == 2)
         {
-            MoveHover(-465, 285);
+            MoveHover(-471, 292, 180, 90);
         }
         if (LevelSelected == 3)
         {
-            MoveHover(-465, -26);
+            MoveHover(-375, -52, 0, 45);
         }
         if (LevelSelected == 4)
         {
-            MoveHover(5, -26);
+            MoveHover(10, -25, 0, 90);
         }
         if (LevelSelected == 5)
         {
-            MoveHover(423, -26);
+            MoveHover(354, -25, 0, 135);
         }
         if (LevelSelected == 6)
         {
-            MoveHover(423, 285);
+            MoveHover(322, 194, 180, 0);
         }
     }
 
     //Change the position of the box highlighting the button the player is on
-    public void MoveHover(int xChange, int yChange)
+    public void MoveHover(int xChange, int yChange, int yRotation, int zRotation)
     {
         LevelHoverMover.localPosition = new Vector3(xChange, yChange, 0);
+        LevelHoverMover.transform.rotation = Quaternion.Euler(0, yRotation, zRotation);
     }
 }

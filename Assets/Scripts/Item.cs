@@ -9,15 +9,17 @@ public class Item
     private Sprite ItemImage;
     private int ItemDuration;           //The amount of turns the effect lasts (0 for instant effect)
     private bool IsUsableOnTeam;        //Will this be casted on an enemy or ally?
+    private bool IsHealing;             //Determine if this item has healing capabilities
     Endimon.StatusEffects Effect;       //What effect does this cast on an Endimon
 
     //Makes an Item
-    public Item(string theName, string desc, int turns, bool onTeam, Endimon.StatusEffects eff)
+    public Item(string theName, string desc, int turns, bool onTeam, bool healing, Endimon.StatusEffects eff)
     {
         ItemName = theName;
         ItemDescription = desc;
         ItemDuration = turns;
         IsUsableOnTeam = onTeam;
+        IsHealing = healing;
         Effect = eff;
         DetermineImage();
     }
@@ -101,6 +103,7 @@ public class Item
     public string GetItemDescription() { return ItemDescription; }
     public int GetItemDuration() { return ItemDuration; }
     public bool GetUsabilityTeam() { return IsUsableOnTeam; }
+    public bool GetHealing() { return IsHealing; }
     public Sprite GetItemImage() { return ItemImage; }
     public Endimon.StatusEffects GetEffect() { return Effect; }
 

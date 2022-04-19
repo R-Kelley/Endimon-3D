@@ -7,7 +7,8 @@ using UnityEngine.UI;
 public class BattleController : MonoBehaviour
 {
     //General information tied to ensuring a turn-based system
-    private enum Turn { P1, P2, AI1, AI2 };                                  //Which Endimon turn is it?
+    private enum Turn { P1, P2, AI1, AI2 };    //Which Endimon turn is it?
+
     //What UI menu is the most recently opened for the player
     private enum Screen { Main, AttackMoveSelection, AttackTargetSelection, SwitchTeamSelection, SwitchFieldSelection, ItemSelection, ItemTargetSelection, Quit, None };   //What menu is the user in?
     private Turn ActiveTurn;
@@ -15,14 +16,13 @@ public class BattleController : MonoBehaviour
     private Character MainPlayer;
     private AI MainAI;
     private Endimon ActiveEndimon;              //The Endimon taking their turn at this very moment
-    private bool ContinueGame;                  //Determine if the game should stop or not
     private int Selection;                      //The value to determine the option the player has selected in a menu
     private CameraController CamCont;           //The script to control the camera
     private string TurnIndicator = "Player";    //Variable helps indicate to camera cutscenes the phase of battle (different from turn/ values include "Player" "MidTurn" "AI")
 
     //Cords for the highlighter placement, indexes are in this order: (0-3 = MainScreen | 4-6 = ObjectScreen | 7-8 = TargetScreen)
-    private int[] XValues = { -254, 222, -254, 222, -369, -369, -369, -314, -314 };  //X Values for all places the  the highlighter will go
-    private int[] YValues = { 190, 190, -91, -91, 163, -34, -228, 95, -138 };        //Y Values for all the places the highlighter will go 
+    private int[] XValues = { -24, 19, -24, 19, -34, -34, -34, -29, -29 };  //X Values for all places the  the highlighter will go
+    private int[] YValues = { 6, 6, -26, -26, 19, -3, -25, 10, -16 };        //Y Values for all the places the highlighter will go 
 
     //Main Panels on the screen that will show/hide
     public GameObject MainScreenPanel;
@@ -34,7 +34,6 @@ public class BattleController : MonoBehaviour
     public GameObject AI1EndimonPanel;
     public GameObject AI2EndimonPanel;
     public GameObject StatusesPanel;
-    private bool IsBottomUIActive;
     public GameObject BattleTextPanel;
     public TextMeshProUGUI BattleText;
 
@@ -59,6 +58,7 @@ public class BattleController : MonoBehaviour
     //0-1 P1 | 2-3 P2 | 4-5 AI1 | 6-7 AI2 | 8-9 Globals
     public Image[] StatusesBoxes;
     public TextMeshProUGUI[] StatusesText;
+    public Sprite[] BoxSprites; //10 Icons: DmgUp/DefUp/Heal/Confusion/Poison/Sleep/Paralyze/PyroG/FrostG/ShadowG
 
     //The 4 Endimon Models in the game, their preset locations, as well as their animatiors
     public GameObject[] ActiveEndimonLocations;
@@ -99,7 +99,6 @@ public class BattleController : MonoBehaviour
         }
         ObjectScreenPanel.SetActive(false);
         TargetScreenPanel.SetActive(false);
-        IsBottomUIActive = false;
 
         //Will loop through and set button handlers to all buttons, each will know the selection number they should have
         for (int i = 0; i < MainScreenButtons.Length; i++)
@@ -142,6 +141,7 @@ public class BattleController : MonoBehaviour
         //Insert the Effects into the arrays
         AttackEffectParticles = new ParticleSystem[9];
         StatusEffectParticles = new ParticleSystem[12];
+        BoxSprites = new Sprite[10];
 
         AttackEffectParticles[0] = Resources.Load("ParticleEffects/FireHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[1] = Resources.Load("ParticleEffects/FrostHit", typeof(ParticleSystem)) as ParticleSystem;
@@ -165,6 +165,17 @@ public class BattleController : MonoBehaviour
         StatusEffectParticles[9] = Resources.Load("ParticleEffects/FireGlobal", typeof(ParticleSystem)) as ParticleSystem;
         StatusEffectParticles[10] = Resources.Load("ParticleEffects/BlizzardGlobal", typeof(ParticleSystem)) as ParticleSystem;
         StatusEffectParticles[11] = Resources.Load("ParticleEffects/DarkGlobal", typeof(ParticleSystem)) as ParticleSystem;
+     
+        BoxSprites[0] = Resources.Load("StatusIcons/DamageUp", typeof(Sprite)) as Sprite;
+        BoxSprites[1] = Resources.Load("StatusIcons/DefenseUp", typeof(Sprite)) as Sprite;
+        BoxSprites[2] = Resources.Load("StatusIcons/Healing", typeof(Sprite)) as Sprite;
+        BoxSprites[3] = Resources.Load("StatusIcons/Confusion", typeof(Sprite)) as Sprite;
+        BoxSprites[4] = Resources.Load("StatusIcons/Poison", typeof(Sprite)) as Sprite;
+        BoxSprites[5] = Resources.Load("StatusIcons/Sleep", typeof(Sprite)) as Sprite;
+        BoxSprites[6] = Resources.Load("StatusIcons/Paralyze", typeof(Sprite)) as Sprite;
+        BoxSprites[7] = Resources.Load("StatusIcons/FireGlobal", typeof(Sprite)) as Sprite;
+        BoxSprites[8] = Resources.Load("StatusIcons/BlizzardGlobal", typeof(Sprite)) as Sprite;
+        BoxSprites[9] = Resources.Load("StatusIcons/ShadowGlobal", typeof(Sprite)) as Sprite;
 
         //Grab Animators for each active endimon in the game
         EndimonAnims = new Animator[4];
@@ -176,7 +187,6 @@ public class BattleController : MonoBehaviour
         ActiveTurn = Turn.P1;                           //Start with the player's turn first
         ActiveEndimon = MainPlayer.GetActiveEndimon1(); //Player's first Endimon is the first to go
         ActiveScreen = Screen.Main;                     //Main menu should be the active screen
-        ContinueGame = true;                            //Only set to false when the game is over
         Selection = 0;                                  //The user's selection on the menu
         MainMenuText.text = ActiveEndimon.GetName() + "'s turn";    //Change text to active Endimon's turn
 
@@ -187,19 +197,18 @@ public class BattleController : MonoBehaviour
         NegativeParticle = new ParticleSystem[4];
         GlobalParticle = new ParticleSystem[2];
 
-
         //Fill in each Endimon on the fields values into the corresponding UI
         for (int i = 0; i < 2; i++)
         {
             ActiveEndimonPictures[i].sprite = MainPlayer.GetEndimon(i).GetEndimonLargeImage();
             ActiveEndimonNames[i].text = MainPlayer.GetEndimon(i).GetName();
-            ActiveEndimonHealth[i].text = MainPlayer.GetEndimon(i).GetCurrentHP() + "/" + MainPlayer.GetEndimon(i).GetHealth();
+            ActiveEndimonHealth[i].text = "HP: " + MainPlayer.GetEndimon(i).GetCurrentHP() + "/" + MainPlayer.GetEndimon(i).GetHealth();
         }
         for (int i = 0; i < 2; i++) {
             //Boxes are 2 & 3 for AI so add an offset to account for this
             ActiveEndimonPictures[i + 2].sprite = MainAI.GetEndimon(i).GetEndimonLargeImage();
             ActiveEndimonNames[i + 2].text = MainAI.GetEndimon(i).GetName();
-            ActiveEndimonHealth[i + 2].text = MainAI.GetEndimon(i).GetCurrentHP() + "/" + MainAI.GetEndimon(i).GetHealth();
+            ActiveEndimonHealth[i + 2].text = "HP: " + MainAI.GetEndimon(i).GetCurrentHP() + "/" + MainAI.GetEndimon(i).GetHealth();
         }
 
         CamCont = GameObject.Find("MainCamera").GetComponent<CameraController>();
@@ -225,8 +234,16 @@ public class BattleController : MonoBehaviour
             }
             else if (diff == CharacterSelectController.DifficultySelection.Medium)
             {
-                //Call medium function
-                StartCoroutine(MainAI.DecidingActionMedium(this, ActiveEndimon, EndimonAnims, StatusesBoxes));
+                //Call medium function (Tossup between easy or hard)
+                int rand = Random.Range(1, 10);
+                if(rand > 5)
+                {
+                    StartCoroutine(MainAI.DecidingActionEasy(this, ActiveEndimon, EndimonAnims, StatusesBoxes));
+                }
+                else
+                {
+                    StartCoroutine(MainAI.DecidingActionHard(this, ActiveEndimon, EndimonAnims, StatusesBoxes));
+                }
             }
             else
             {
@@ -261,14 +278,12 @@ public class BattleController : MonoBehaviour
                 //If on the main screen, this means we move up if we can, values are horizontal so jump by 2
                 if (ActiveScreen == Screen.Main && Selection > 1)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection = Selection - 2;
 
                 }
                 //For 3 options, we set the indexes from 0-2
                 else if (ActiveScreen == Screen.AttackMoveSelection || ActiveScreen == Screen.ItemSelection)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection--;
                     //If we are on a screen with 3 options, make sure it stays between 0-2
                     if (Selection < 0)
@@ -280,7 +295,6 @@ public class BattleController : MonoBehaviour
                 else if (ActiveScreen == Screen.AttackTargetSelection || ActiveScreen == Screen.ItemTargetSelection || ActiveScreen == Screen.SwitchFieldSelection
                     || ActiveScreen == Screen.SwitchTeamSelection || ActiveScreen == Screen.Quit)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection--;
                     if (Selection < 0)
                     {
@@ -296,13 +310,11 @@ public class BattleController : MonoBehaviour
                 //If on the main screen, this means we move down if we can, values are horizontal so jump by 2
                 if (ActiveScreen == Screen.Main && Selection < 2)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection = Selection + 2;
                 }
                 //For 3 options, we set the indexes from 0-2
                 else if (ActiveScreen == Screen.AttackMoveSelection || ActiveScreen == Screen.ItemSelection)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection++;
                     if (Selection > 2)
                     {
@@ -313,7 +325,6 @@ public class BattleController : MonoBehaviour
                 else if (ActiveScreen == Screen.AttackTargetSelection || ActiveScreen == Screen.ItemTargetSelection || ActiveScreen == Screen.SwitchFieldSelection
                     || ActiveScreen == Screen.SwitchTeamSelection || ActiveScreen == Screen.Quit)
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                     Selection++;
                     if (Selection > 1)
                     {
@@ -330,12 +341,10 @@ public class BattleController : MonoBehaviour
                 {
                     if (Selection == 1)
                     {
-                        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                         Selection = 0;
                     }
                     else if (Selection == 3)
                     {
-                        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                         Selection = 2;
                     }
                     UpdateHighlighter();
@@ -349,12 +358,10 @@ public class BattleController : MonoBehaviour
                 {
                     if (Selection == 0)
                     {
-                        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                         Selection = 1;
                     }
                     else if (Selection == 2)
                     {
-                        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
                         Selection = 3;
                     }
                     UpdateHighlighter();
@@ -364,13 +371,13 @@ public class BattleController : MonoBehaviour
             //SPACEBAR WILL REPRESENT A SELECTION IN THE MENUS, WE WILL ACCORDINGLY CALL THE FUNCTION TO HANDLE THE ACTION
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
                 StartCoroutine(SelectionWasMade(Selection));
             }
 
             //BACKSPACE WILL TAKE YOU BACK ONE SCREEN ACCORDINGLY, ASSUMING YOU ARE NOT ON THE MAIN MENU
             if (Input.GetKeyDown(KeyCode.Backspace))
             {
-                Debug.Log("Going back");
                 BackspacePressed();
             }
         }
@@ -415,6 +422,89 @@ public class BattleController : MonoBehaviour
         UpdateHighlighter();
     }
 
+    public void AttackBtnPressed()
+    {
+        if (ActiveScreen == Screen.Main)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(0));
+        }
+    }
+
+    public void ItemBtnPressed()
+    {
+        if (ActiveScreen == Screen.Main)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(2));
+        }
+    }
+
+    public void SwapBtnPressed()
+    {
+        if (ActiveScreen == Screen.Main)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(1));
+        }
+    }
+
+    public void GiveUpBtnPressed()
+    {
+        if (ActiveScreen == Screen.Main)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(3));
+        }
+    }
+
+    public void ObjectBtn1Pressed()
+    {
+        if (ActiveScreen == Screen.ItemSelection || ActiveScreen == Screen.AttackMoveSelection)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(0));
+        }
+    }
+
+    public void ObjectBtn2Pressed()
+    {
+        if (ActiveScreen == Screen.ItemSelection || ActiveScreen == Screen.AttackMoveSelection)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(1));
+        }
+    }
+
+    public void ObjectBtn3Pressed()
+    {
+        if (ActiveScreen == Screen.ItemSelection || ActiveScreen == Screen.AttackMoveSelection)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(2));
+        }
+    }
+
+    public void TargetBtn1Pressed()
+    {
+        if (ActiveScreen == Screen.ItemTargetSelection || ActiveScreen == Screen.AttackTargetSelection || ActiveScreen == Screen.SwitchFieldSelection
+            || ActiveScreen == Screen.SwitchTeamSelection || ActiveScreen == Screen.Quit)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(0));
+        }
+    }
+
+    public void TargetBtn2Pressed()
+    {
+        if (ActiveScreen == Screen.ItemTargetSelection || ActiveScreen == Screen.AttackTargetSelection || ActiveScreen == Screen.SwitchFieldSelection
+            || ActiveScreen == Screen.SwitchTeamSelection || ActiveScreen == Screen.Quit)
+        {
+            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
+            StartCoroutine(SelectionWasMade(1));
+        }
+    }
+
     //Takes a new Endimon and inserts its current stats into a UI box of choice
     public void SwitchEndimonUI(Endimon EndimonToPutIn, int UIBox)
     {
@@ -428,21 +518,21 @@ public class BattleController : MonoBehaviour
         EndimonAnims[EndimonToPutIn.GetActiveNumber()] = ActiveEndimonModels[EndimonToPutIn.GetActiveNumber()].GetComponent<Animator>();
         Instantiate(AttackEffectParticles[8], ActiveEndimonLocations[EndimonToPutIn.GetActiveNumber()].transform.position, ActiveEndimonLocations[EndimonToPutIn.GetActiveNumber()].transform.rotation);
         AudioSource.PlayClipAtPoint(Audio.SwapIn, GameObject.Find("MainCamera").transform.position);
-        UpdateStatusEffectBoxes(EndimonToPutIn);
+        UpdateStatusEffectBoxes(EndimonToPutIn, -1);
         EndimonToPutIn.DecreaseStatusEffectTurns();
     }
 
     //Update the health values on the display for each Endimon
     public void UpdateHealthValues()
     {
-        ActiveEndimonHealth[0].text = MainPlayer.GetActiveEndimon1().GetCurrentHP() + "/" + MainPlayer.GetActiveEndimon1().GetHealth();
-        ActiveEndimonHealth[1].text = MainPlayer.GetActiveEndimon2().GetCurrentHP() + "/" + MainPlayer.GetActiveEndimon2().GetHealth();
-        ActiveEndimonHealth[2].text = MainAI.GetActiveEndimon1().GetCurrentHP() + "/" + MainAI.GetActiveEndimon1().GetHealth();
-        ActiveEndimonHealth[3].text = MainAI.GetActiveEndimon2().GetCurrentHP() + "/" + MainAI.GetActiveEndimon2().GetHealth();
+        ActiveEndimonHealth[0].text = "HP: " + MainPlayer.GetActiveEndimon1().GetCurrentHP() + "/" + MainPlayer.GetActiveEndimon1().GetHealth();
+        ActiveEndimonHealth[1].text = "HP: " + MainPlayer.GetActiveEndimon2().GetCurrentHP() + "/" + MainPlayer.GetActiveEndimon2().GetHealth();
+        ActiveEndimonHealth[2].text = "HP: " + MainAI.GetActiveEndimon1().GetCurrentHP() + "/" + MainAI.GetActiveEndimon1().GetHealth();
+        ActiveEndimonHealth[3].text = "HP: " + MainAI.GetActiveEndimon2().GetCurrentHP() + "/" + MainAI.GetActiveEndimon2().GetHealth();
     }
 
     //Function will take an Endimon and update all UI components involved with effects accordingly
-    public void UpdateStatusEffectBoxes(Endimon e)
+    public void UpdateStatusEffectBoxes(Endimon e, int index)
     {
         int offset = 0; //Determine the added offset needed to reach the correct indexes in the status effect boxes
         if (e != null)
@@ -472,7 +562,11 @@ public class BattleController : MonoBehaviour
                 Debug.Log("Effect: " + e.GetEndimonPostiveEffect() + " is still active for " + turns[0] + " turns");
                 StatusesBoxes[offset].gameObject.SetActive(true);
                 StatusesText[offset].gameObject.SetActive(true);
-                StatusesBoxes[offset].color = new Color32(4, 127, 12, 255);
+                if (index != -1)
+                {
+                    StatusesBoxes[offset].sprite = ConvertIndexToIcon(index);
+                    StatusesBoxes[offset].color = new Color32(4, 127, 12, 255);
+                }
                 StatusesText[offset].text = turns[0].ToString();
             }
 
@@ -495,7 +589,11 @@ public class BattleController : MonoBehaviour
                 Debug.Log("Effect: " + e.GetEndimonPostiveEffect() + " is still active for " + turns[1] + " turns");
                 StatusesBoxes[offset + 1].gameObject.SetActive(true);
                 StatusesText[offset + 1].gameObject.SetActive(true);
-                StatusesBoxes[offset + 1].color = new Color32(174, 3, 17, 255);
+                if (index != -1)
+                {
+                    StatusesBoxes[offset + 1].sprite = ConvertIndexToIcon(index);
+                    StatusesBoxes[offset + 1].color = new Color32(174, 3, 17, 255);
+                }
                 StatusesText[offset + 1].text = turns[1].ToString();
             }
 
@@ -592,12 +690,12 @@ public class BattleController : MonoBehaviour
                 StartCoroutine(EndTurnStatuses());
             }
 
-            ActiveTurnParticle.transform.position = ActiveEndimonLocations[ActiveEndimon.GetActiveNumber()].transform.position;
             ActiveScreen = Screen.Main;
             Selection = 0;
             MainMenuText.text = ActiveEndimon.GetName();
             UpdateHighlighter();
         }
+        ActiveTurnParticle.transform.position = ActiveEndimonLocations[ActiveEndimon.GetActiveNumber()].transform.position;
     }
 
     //THE FOLLOWING FUNCTIONS ARE TURN ENDING FUNCTIONS, EACH WILL CALL ONE ANOTHER IN ORDER TO KEEP DELAYS WORKING
@@ -614,7 +712,6 @@ public class BattleController : MonoBehaviour
         Debug.Log("Ending turn");
         ActiveEndimon.SetTurnStatus(true);
 
-        //*ADD HERE THAT THE ENDIMON YOU WERE LOOKING AT WAS SLEEPING!!!!!
         if(ActiveEndimon.GetEndimonNegativeEffect() == Endimon.StatusEffects.Sleep)
         {
             CameraController.SetGameStatus("Defending", ActiveEndimon);
@@ -636,7 +733,6 @@ public class BattleController : MonoBehaviour
         if (ActiveEndimon.GetEndimonPostiveEffect() == Endimon.StatusEffects.Synthesis)
         {
             //Prepare to look at Endimon
-
             CameraController.SetGameStatus("Defending", ActiveEndimon);
             BattleTextPanel.SetActive(true);
             BattleText.text = BattleTextController.OvertimeEffectText(ActiveEndimon, Endimon.StatusEffects.Synthesis, "");
@@ -644,13 +740,13 @@ public class BattleController : MonoBehaviour
             yield return new WaitForSeconds(1f);
 
             //Do the healing
-            Debug.Log("Synthesis heals for 15");
+            Debug.Log("Synthesis heals for 25");
             AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
-            ActiveEndimon.TakeDamage(-15);
+            ActiveEndimon.TakeDamage(-25);
             UpdateHealthValues();
 
             //Waiting action to finish up then switching back
-            yield return new WaitForSeconds(2.5f);
+            yield return new WaitForSeconds(3f);
             BattleTextPanel.SetActive(false);
             CameraController.SetGameStatus("PlayerAwaitTurn", null);
         }
@@ -664,10 +760,10 @@ public class BattleController : MonoBehaviour
             yield return new WaitForSeconds(1f);
 
             //Do the healing
-            Debug.Log("Posion overtime effect dealing 20 dmg");
+            Debug.Log("Posion overtime effect dealing 25 dmg");
             AudioSource.PlayClipAtPoint(Audio.Poison, GameObject.Find("MainCamera").transform.position);
             EndimonAnims[ActiveEndimon.GetActiveNumber()].Play(ActiveEndimon.GetAnimationName(3));
-            ActiveEndimon.TakeDamage(-20);
+            ActiveEndimon.TakeDamage(-25);
             ActiveEndimon.SetDefense(10);
             UpdateHealthValues();
             Debug.Log("New defense: " + ActiveEndimon.GetDefense());
@@ -689,10 +785,10 @@ public class BattleController : MonoBehaviour
             BattleText.text = BattleTextController.OvertimeEffectText(ActiveEndimon, Endimon.StatusEffects.Nothing, "Blizzard");
             yield return new WaitForSeconds(1f);
 
-            Debug.Log("Blizzard hit for 20");
+            Debug.Log("Blizzard hit for 25");
             EndimonAnims[ActiveEndimon.GetActiveNumber()].Play(ActiveEndimon.GetAnimationName(3));  //Take damage animation
             AudioSource.PlayClipAtPoint(Audio.GlobalBlizzard, GameObject.Find("MainCamera").transform.position);
-            ActiveEndimon.TakeDamage(20);
+            ActiveEndimon.TakeDamage(25);
             UpdateHealthValues();
 
             //Waiting action to finish up then switching back
@@ -858,7 +954,7 @@ public class BattleController : MonoBehaviour
         Debug.Log("Turn ended for Endimon: " + ActiveEndimon.GetName());
         ActiveScreen = Screen.None;                   //User is no longer able to make selections
         ActiveEndimon.DecreaseStatusEffectTurns();    //Subtract the duration of the effects on this Endimon
-        UpdateStatusEffectBoxes(ActiveEndimon);       //Update these values of effects on the UI
+        UpdateStatusEffectBoxes(ActiveEndimon, -1);   //Update these values of effects on the UI
         ResetAnySelections();                         //Reset any selections made by the player/AI
 
         //See if we should end the round now (Has everyone gone?)
@@ -923,17 +1019,20 @@ public class BattleController : MonoBehaviour
     {
         //Find out the effect this hit should be
         int effectIndex = -1;
+        float abilityHeight = 1f;
         if (UsedMove.GetMoveType() == Endimon.Endimontypes.Pyro) {
             effectIndex = 0;
             AudioSource.PlayClipAtPoint(Audio.PyroAttack, GameObject.Find("MainCamera").transform.position);
         }
         else if (UsedMove.GetMoveType() == Endimon.Endimontypes.Frost) {
             effectIndex = 1;
+            abilityHeight += 1.5f;
             AudioSource.PlayClipAtPoint(Audio.FrostAttack, GameObject.Find("MainCamera").transform.position);
         }
         else if (UsedMove.GetMoveType() == Endimon.Endimontypes.Electro) {
             effectIndex = 2;
             AudioSource.PlayClipAtPoint(Audio.ElectroAttack, GameObject.Find("MainCamera").transform.position);
+            abilityHeight += 2f;
         }
         else if (UsedMove.GetMoveType() == Endimon.Endimontypes.Earth) {
             effectIndex = 3;
@@ -941,6 +1040,7 @@ public class BattleController : MonoBehaviour
         }
         else if (UsedMove.GetMoveType() == Endimon.Endimontypes.Shadow) {
             effectIndex = 4;
+            abilityHeight += 3f;
             AudioSource.PlayClipAtPoint(Audio.ShadowAttack, GameObject.Find("MainCamera").transform.position);
         }
 
@@ -948,20 +1048,30 @@ public class BattleController : MonoBehaviour
         {
             if (CurrentEndimon.GetActiveNumber() == 0 || CurrentEndimon.GetActiveNumber() == 1)
             {
-                PlayParticleAtLocation(CurrentEndimon, true, effectIndex, 1f, 5f);
+                PlayParticleAtLocation(CurrentEndimon, true, effectIndex, abilityHeight, 5f);
             }
             else
             { 
-                PlayParticleAtLocation(CurrentEndimon, true, effectIndex, 1f, -5f);
+                PlayParticleAtLocation(CurrentEndimon, true, effectIndex, abilityHeight, -5f);
             }
         }
     }
 
-    //Function will create a status effect on a selected Endimon based upon the effect
-    public void CastItemEffect(Item UsedItem, Endimon TargetEndimon)
+    //Function will create a status effect on a selected Endimon based upon the effect (Also returns the index of the particl effect)
+    public int CastItemEffect(Item UsedItem, Endimon TargetEndimon)
     {
-        Vector3 location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x,
-                      ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
+        Vector3 location;
+        if (TargetEndimon.GetActiveNumber() == 0 || TargetEndimon.GetActiveNumber() == 1)
+        {
+            location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x + 2.5f,
+              ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
+        }
+        else
+        {
+            location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x + -2.5f,
+              ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
+        }
+
 
         int itemIndex = 0;
 
@@ -984,6 +1094,7 @@ public class BattleController : MonoBehaviour
         else if (UsedItem.GetItemName() == "Bulk-Up Candy")
         {
             itemIndex = 8;
+            location = new Vector3(location.x, location.y, location.z - 5f);
         }
         else if (UsedItem.GetItemName() == "Paralyze Candy")
         {
@@ -1010,13 +1121,28 @@ public class BattleController : MonoBehaviour
         {
             NegativeParticle[TargetEndimon.GetActiveNumber()] = Instantiate(StatusEffectParticles[itemIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
         }
+        return itemIndex;
     }
 
     //After using a special ability, a particle effect will be attached accordingly if there is a status
     public void CastAbilityEffect(int particleIndex, Endimon e)
     {
-        Vector3 location= new Vector3(ActiveEndimonLocations[e.GetActiveNumber()].transform.position.x,
-               ActiveEndimonLocations[e.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[e.GetActiveNumber()].transform.position.z);
+        Vector3 location;
+        if (e.GetActiveNumber() == 0 || e.GetActiveNumber() == 1)
+        {
+            location = new Vector3(ActiveEndimonLocations[e.GetActiveNumber()].transform.position.x + 2.5f,
+              ActiveEndimonLocations[e.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[e.GetActiveNumber()].transform.position.z);
+        }
+        else
+        {
+            location = new Vector3(ActiveEndimonLocations[e.GetActiveNumber()].transform.position.x + -2.5f,
+              ActiveEndimonLocations[e.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[e.GetActiveNumber()].transform.position.z);
+        }
+
+        if(particleIndex == 8)
+        {
+            location = new Vector3(location.x, location.y, location.z - 5f);
+        }
 
         if (e.GetEndimonMove3().GetHarmful())
         {
@@ -1047,9 +1173,9 @@ public class BattleController : MonoBehaviour
         }
     }
 
-    //This function runs when an AI wants to cast an item effect
+    //This function runs when an AI wants to cast an item effect (Return the particle index if an item was used)
     //In order to successfully place particle effects, the AI will call this to cast the item animation on itself and the Endimon the item is on
-    public void FindLocationForItemParticle(Endimon UserEndimon, Endimon TargetEndimon, Item UsedItem)
+    public int FindLocationForItemParticle(Endimon UserEndimon, Endimon TargetEndimon, Item UsedItem)
     {
         if (UsedItem.GetItemDuration() == 0)
         {
@@ -1064,8 +1190,9 @@ public class BattleController : MonoBehaviour
         }
         else
         {
-            CastItemEffect(UsedItem, TargetEndimon);
+           return CastItemEffect(UsedItem, TargetEndimon);
         }
+        return -1;
     }
 
     //Function used to display a particle effect at a specific Endimon location
@@ -1079,10 +1206,59 @@ public class BattleController : MonoBehaviour
         }
         else
         {
-            Vector3 location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + heightAdjustment,
+            Vector3 location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x + sideAdjustment, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + heightAdjustment,
                 ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
+            if(particleIndex == 8)
+            {
+                location = new Vector3(location.x, location.y, location.z - 5f);
+            }
             Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
         }
+    }
+
+    public Sprite ConvertIndexToIcon(int index)
+    {
+        if (index == 9)
+        {
+            return BoxSprites[7];
+        }
+        if (index == 10)
+        {
+            return BoxSprites[8];
+        }
+        if (index == 11)
+        {
+            return BoxSprites[9];
+        }
+        if (index == 1)
+        {
+            return BoxSprites[5];
+        }
+        if (index == 2)
+        {
+            return BoxSprites[4];
+        }
+        if (index == 3)
+        {
+            return BoxSprites[6];
+        }
+        if (index == 4)
+        {
+            return BoxSprites[3];
+        }
+        if (index == 5)
+        {
+            return BoxSprites[2];
+        }
+        if (index == 8)
+        {
+            return BoxSprites[1];
+        }
+        if (index == 7)
+        {
+            return BoxSprites[0];
+        }
+        return null;
     }
 
     //Adds a new global effect to the field, will replace the one in the first slot if 2 are already present
@@ -1091,6 +1267,7 @@ public class BattleController : MonoBehaviour
         StatusesPanel.SetActive(true);
         Vector3 location;
         Color32 boxColor;
+        
         Quaternion rot = new Quaternion(0, 0, 0, 0);
         //This means there are already 2 global effects running, we need to get rid of the old version
         if (GlobalParticle[1] != null && GlobalParticle[0] != null)
@@ -1103,18 +1280,17 @@ public class BattleController : MonoBehaviour
         //Figure out the location/color based upon the particle
         if (particleIndex == 10)
         {
-            location = new Vector3(0, 45, 40);
+            location = new Vector3(0, 75, 47);
             boxColor = new Color32(11, 199, 195, 255);
         }
         else if (particleIndex == 11)
         {
             location = new Vector3(0, 5, 42);
-            boxColor = new Color32(30, 30, 30, 255);
-            rot = new Quaternion(-90, 0, 0, 0);
+            boxColor = Color.white;
         }
         else
         {
-            location = new Vector3(0, 15, -9);
+            location = new Vector3(0, 15, 0);
             boxColor = new Color32(174, 3, 17, 255);
         }
         if (GlobalParticle[0] == null)
@@ -1124,10 +1300,7 @@ public class BattleController : MonoBehaviour
             StatusesText[8].gameObject.SetActive(true);
             StatusesText[8].text = "3";
             StatusesBoxes[8].color = boxColor;
-            if (particleIndex == 11)
-            {
-                GlobalParticle[0].transform.Rotate(-90, 0, 0);
-            }
+            StatusesBoxes[8].sprite = ConvertIndexToIcon(particleIndex);
         }
         else
         {
@@ -1136,10 +1309,7 @@ public class BattleController : MonoBehaviour
             StatusesText[9].gameObject.SetActive(true);
             StatusesText[9].text = "3";
             StatusesBoxes[9].color = boxColor;
-            if (particleIndex == 11)
-            {
-                GlobalParticle[1].transform.Rotate(-90, 0, 0);
-            }
+            StatusesBoxes[9].sprite = ConvertIndexToIcon(particleIndex);
         }
     }
 
@@ -1156,6 +1326,7 @@ public class BattleController : MonoBehaviour
             {
                 StatusesBoxes[8].gameObject.SetActive(false);
                 StatusesText[8].gameObject.SetActive(false);
+                StatusesBoxes[8].sprite = null;
                 StatusesBoxes[8].color = Color.white;
                 GlobalParticle[0].Stop();
                 GlobalParticle[0].Clear();
@@ -1172,6 +1343,7 @@ public class BattleController : MonoBehaviour
             {
                 StatusesBoxes[9].gameObject.SetActive(false);
                 StatusesText[9].gameObject.SetActive(false);
+                StatusesBoxes[9].sprite = null;
                 StatusesBoxes[9].color = Color.white;
                 GlobalParticle[1].Stop();
                 GlobalParticle[1].Clear();
@@ -1422,7 +1594,6 @@ public class BattleController : MonoBehaviour
                 ActiveScreen = Screen.Quit;
                 TargetScreenPanel.SetActive(true);
             }
-            AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
             Selection = 0;
             UpdateHighlighter();
             UpdateSelectionOptions();
@@ -1438,7 +1609,6 @@ public class BattleController : MonoBehaviour
             if (Selection == 0)
             {
                 tempMove = ActiveEndimon.GetEndimonMove1();
-                AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
                 tempSelection = Selection;
                 Selection = 0;
                 UpdateHighlighter();
@@ -1447,7 +1617,6 @@ public class BattleController : MonoBehaviour
             else if (Selection == 1)
             {
                 tempMove = ActiveEndimon.GetEndimonMove2();
-                AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
                 tempSelection = Selection;
                 Selection = 0;
                 UpdateHighlighter();
@@ -1459,8 +1628,6 @@ public class BattleController : MonoBehaviour
                 //If this move can't hit anyone, then we need to deal with it now
                 if (!tempSpecialMove.GetTargetable())
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
-
                     ToggleBottomUI(false, false, false, false);
                     CameraController.SetGameStatus("Attacking", ActiveEndimon);
                     BattleTextPanel.SetActive(true);
@@ -1487,7 +1654,6 @@ public class BattleController : MonoBehaviour
                 //Otherwise, we will act as if any type of move has been selected
                 else
                 {
-                    AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
                     tempSelection = Selection;
                     Selection = 0;
                     UpdateHighlighter();
@@ -1552,7 +1718,7 @@ public class BattleController : MonoBehaviour
                 yield return new WaitForSeconds(.5f);
 
                 //Damage & Damaged Animation
-                int damage = ActiveEndimon.UseDamageMove(ActiveEndimon, tempMove, tempEndimon, StatusesBoxes);
+                int damage = ActiveEndimon.UseDamageMove(ActiveEndimon, tempMove, tempEndimon, StatusesBoxes, false);
                 BattleText.text = BattleTextController.DefendDamageText(ActiveEndimon, tempMove, tempEndimon, damage, CheckShadowCastStatus());
                 bool died = tempEndimon.TakeDamage(damage);
                 UpdateHealthValues();
@@ -1570,7 +1736,7 @@ public class BattleController : MonoBehaviour
                 }
 
                 //Setting things back to normal
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(2f);
                 BattleTextPanel.SetActive(false);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
                 StartCoroutine(EndTurnStatuses());
@@ -1593,13 +1759,17 @@ public class BattleController : MonoBehaviour
 
                 //Place particle effect onto the AI Endimon
                 int particleIndex = ActiveEndimon.UseSpecialMove(ActiveEndimon, tempEndimon, ActiveEndimon.GetEndimonMove3());
+                if(particleIndex == -1)
+                {
+                    BattleText.text = "The attack failed";
+                }
                 CastAbilityEffect(particleIndex, tempEndimon);
 
                 yield return new WaitForSeconds(1.5f);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
                 BattleTextPanel.SetActive(false);
                 UpdateHealthValues();
-                UpdateStatusEffectBoxes(tempEndimon);
+                UpdateStatusEffectBoxes(tempEndimon, particleIndex);
                 StartCoroutine(EndTurnStatuses());
             }
         }
@@ -1628,15 +1798,8 @@ public class BattleController : MonoBehaviour
                 }
             }
 
-            //If somehow the selected option returned an Endimon not on the team, let the user try again
-            if (tempEndimon == null)
+            if(tempEndimon != null)
             {
-                Debug.Log("Endimon was not selectable");
-                yield return null;
-            }
-            else
-            {
-                AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
                 ActiveScreen = Screen.SwitchFieldSelection;
                 TargetScreenPanel.SetActive(true);
                 Selection = 0;
@@ -1660,7 +1823,12 @@ public class BattleController : MonoBehaviour
                 yield return new WaitForSeconds(1.5f);
 
                 //Doing the switch
+                Endimon oldEndimon = MainPlayer.GetActiveEndimon1();
                 MainPlayer.SwapEndimonOnTurn(1, tempEndimon);
+                if(ActiveEndimon == oldEndimon)
+                {
+                    ActiveEndimon = tempEndimon;
+                }
                 SwitchEndimonUI(MainPlayer.GetActiveEndimon1(), MainPlayer.GetActiveEndimon1().GetActiveNumber());
                 yield return new WaitForSeconds(1f);
 
@@ -1680,7 +1848,12 @@ public class BattleController : MonoBehaviour
                 yield return new WaitForSeconds(1.5f);
 
                 //Doing the switch
+                Endimon oldEndimon = MainPlayer.GetActiveEndimon2();
                 MainPlayer.SwapEndimonOnTurn(2, tempEndimon);
+                if (ActiveEndimon == oldEndimon)
+                {
+                    ActiveEndimon = tempEndimon;
+                }
                 SwitchEndimonUI(MainPlayer.GetActiveEndimon2(), MainPlayer.GetActiveEndimon2().GetActiveNumber());
                 yield return new WaitForSeconds(1f);
 
@@ -1696,17 +1869,15 @@ public class BattleController : MonoBehaviour
         {
             if (Selection == 0 || Selection == 1 || Selection == 2) {
                 tempItem = MainPlayer.GetAnItem(Selection);
-                if (tempItem == null)
+                if (tempItem != null)
                 {
-                    yield return null; //Let the user pick again, this was not a valid item to use
+                    ActiveScreen = Screen.ItemTargetSelection;
+                    TargetScreenPanel.SetActive(true);
+                    ObjectScreenPanel.SetActive(false);
+                    Selection = 0;
+                    UpdateHighlighter();
+                    UpdateSelectionOptions();
                 }
-                AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
-                ActiveScreen = Screen.ItemTargetSelection;
-                TargetScreenPanel.SetActive(true);
-                ObjectScreenPanel.SetActive(false);
-                Selection = 0;
-                UpdateHighlighter();
-                UpdateSelectionOptions();
             }
         }
 
@@ -1757,7 +1928,7 @@ public class BattleController : MonoBehaviour
             yield return new WaitForSeconds(1.5f);
 
             //Use Item particle effect + sound
-            PlayParticleAtLocation(ActiveEndimon, false, 0, 1f, 0f);
+            PlayParticleAtLocation(ActiveEndimon, false, 0, 1.5f, 2.5f);
             AudioSource.PlayClipAtPoint(Audio.UseItem, GameObject.Find("MainCamera").transform.position);
 
             yield return new WaitForSeconds(.5f);
@@ -1766,18 +1937,19 @@ public class BattleController : MonoBehaviour
             yield return new WaitForSeconds(.5f);
 
             //Cast the effect's actual particles, healing if there is no duration. Otherwise, we will handle adding a new one now
+            int particleIndex = -1;
             if (tempItem.GetItemDuration() == 0)
             {
-                PlayParticleAtLocation(tempEndimon, false, 6, 1.5f, 0f);
+                PlayParticleAtLocation(tempEndimon, false, 6, 1.5f, 2.5f);
             }
             else
             {
-                CastItemEffect(tempItem, tempEndimon);
+                particleIndex = CastItemEffect(tempItem, tempEndimon);
             }
 
             MainPlayer.UseItem(tempItem, tempEndimon);
             MainPlayer.RemoveItem(tempItem);
-            UpdateStatusEffectBoxes(tempEndimon);
+            UpdateStatusEffectBoxes(tempEndimon, particleIndex);
             yield return new WaitForSeconds(1.5f);
 
             BattleTextPanel.SetActive(false);
@@ -1883,13 +2055,10 @@ public class BattleController : MonoBehaviour
 
 /*********************
 BUGS
-- 
 
 LOOK OUT FOR
-- Continue Adjusting timing of transistions for readability
-- Hard AI Swapping problems (Maybe with textbox?)
-- Anything out of the ordinary
+- Continue Adjusting timing of transistions for readability (Add another half second to all but global status stuff)
 
 PRIORITY OF ADDING THINGS
-- Improve Battlefield Design
+
 ***********************/

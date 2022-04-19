@@ -24,7 +24,7 @@ public class ItemSelectionController : MonoBehaviour
 
     //Highlighter positions
     private int[] XValues = { 65 };
-    private int[] YValues = { 38, 28, 17, 7, -5, -16, -27, -38 };
+    private int[] YValues = { 37, 27, 16, 5, -6, -17, -28, -40 };
 
     void Start()
     {
@@ -101,13 +101,13 @@ public class ItemSelectionController : MonoBehaviour
         }
 
         //RETURN BUTTON IS CLICKED TO PROCEED INTO BATTLE
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(Input.GetKeyDown(KeyCode.Space))
         {
             ContinueBtnClicked();
         }
 
         //SPACE BUTTON WILL TAKE HOVERED OVER ITEM AND PUT IT INTO THE PLAYER'S LIST OF ITEMS
-        if(Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetKeyDown(KeyCode.LeftShift))
         {
             TakeItemBtnClicked();
         }
@@ -132,7 +132,7 @@ public class ItemSelectionController : MonoBehaviour
             else
             {
                 SelectedItemImages[i].sprite = null;
-                SelectedItemImages[i].color = new Color32(89, 88, 88, 255);
+                SelectedItemImages[i].color = new Color32(159, 159, 159, 255);
                 SelectedItems[i].text = "";
             }
         }
@@ -189,6 +189,11 @@ public class ItemSelectionController : MonoBehaviour
         AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
         GameProfile.GetCurrentCharacter().AddItem(ListOfItems[ItemNumber-1]);
         UpdateUI();
+    }
+
+    public void ButtonHighlight()
+    {
+        AudioSource.PlayClipAtPoint(Audio.ButtonHover, GameObject.Find("MainCamera").transform.position);
     }
 
     //Moves the highlighter to the object it show be hovering over

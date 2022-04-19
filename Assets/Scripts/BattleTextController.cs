@@ -1,21 +1,39 @@
-using UnityEngine;
 
 public class BattleTextController {
 
     //Used when looking at the attacker about to deal damage
     public static string AttackDamageText(Endimon Attacker, Move DamageMove, Endimon Defender)
     {
-        return Attacker.GetName() + " used " + DamageMove.GetMoveName() + " on " + Defender.GetName() + ".";
+        string tempString = "";
+        if (Attacker.GetActiveNumber() == 0 || Attacker.GetActiveNumber() == 1)
+        {
+            tempString += "(Player): ";
+        }
+        else
+        {
+            tempString += "(AI): ";
+        }
+
+        tempString += Attacker.GetName() + " used " + DamageMove.GetMoveName() + " on " + Defender.GetName() + ".";
+        return tempString;
     }
 
     //Used when looking at the defender of the damage
     public static string DefendDamageText(Endimon Attacker, Move DamageMove, Endimon Defender, int damage, bool isShadowcast)
     {
         var tempString = "";
+        if(Attacker.GetActiveNumber() == 0 || Attacker.GetActiveNumber() == 1)
+        {
+            tempString += "(Player): ";
+        }
+        else
+        {
+            tempString += "(AI): ";
+        }
 
         if (Attacker == Defender)
         {
-            tempString = "Endimon hit itself in confusion for " + damage + " damage.";
+            tempString += "Endimon hit itself in confusion for " + damage + " damage.";
         }
         else if (damage <= 0)
         {
@@ -37,12 +55,12 @@ public class BattleTextController {
             }
             else
             {
-                tempString = Defender.GetName() + " resisted the attack.";
+                tempString += Defender.GetName() + " resisted the attack.";
             }
         }
         else
         {
-            tempString = Defender.GetName() + " took " + damage + " damage.";
+            tempString += Defender.GetName() + " took " + damage + " damage.";
         }
 
 
@@ -66,7 +84,15 @@ public class BattleTextController {
     public static string ItemUsedText(Endimon Attacker, Item UsedItem, Endimon Defender)
     {
         string tempString = "";
-        tempString = Attacker.GetName() + " used a " + UsedItem.GetItemName() + " on " + Defender.GetName() + ".";
+        if (Attacker.GetActiveNumber() == 0 || Attacker.GetActiveNumber() == 1)
+        {
+            tempString += "(Player): ";
+        }
+        else
+        {
+            tempString += "(AI): ";
+        }
+        tempString += Attacker.GetName() + " used a " + UsedItem.GetItemName() + " on " + Defender.GetName() + ".";
 
         if(UsedItem.GetEffect() == Endimon.StatusEffects.AttackUp)
         {
@@ -107,8 +133,17 @@ public class BattleTextController {
     public static string SpecialAbilityText(Endimon Attacker, SpecialMove SpecialMove, Endimon Defender)
     {
         string tempString = "";
-        if(SpecialMove.GetMoveName() != "Blizzard" && SpecialMove.GetMoveName() != "Ring of Fire" && SpecialMove.GetMoveName() != "Shadowcast")
-        tempString = Attacker.GetName() + " used " + SpecialMove.GetMoveName() + " on " + Defender.GetName() + ".";
+        if (Attacker.GetActiveNumber() == 0 || Attacker.GetActiveNumber() == 1)
+        {
+            tempString += "(Player): ";
+        }
+        else
+        {
+            tempString += "(AI): ";
+        }
+
+        if (SpecialMove.GetMoveName() != "Blizzard" && SpecialMove.GetMoveName() != "Ring of Fire" && SpecialMove.GetMoveName() != "Shadowcast")
+        tempString += Attacker.GetName() + " used " + SpecialMove.GetMoveName() + " on " + Defender.GetName() + ".";
 
         if(SpecialMove.GetMoveName() == "Rejuvenation")
         {
@@ -140,15 +175,15 @@ public class BattleTextController {
         }
         else if (SpecialMove.GetMoveName() == "Blizzard")
         {
-            tempString = Attacker.GetName() + " has casted a blizzard onto the battlefield";
+            tempString += Attacker.GetName() + " has casted a blizzard onto the battlefield";
         }
         else if (SpecialMove.GetMoveName() == "Ring of Fire")
         {
-            tempString = Attacker.GetName() + " has casted a fire storm onto the battlefield";
+            tempString += Attacker.GetName() + " has casted a fire storm onto the battlefield";
         }
         else if (SpecialMove.GetMoveName() == "Shadowcast")
         {
-            tempString = Attacker.GetName() + " has casted a dark aura onto the battlefield";
+            tempString += Attacker.GetName() + " has casted a dark aura onto the battlefield";
         }
         return tempString;
     }
@@ -202,7 +237,17 @@ public class BattleTextController {
     //Used when an Endimon has swapped out (death/by choice)
     public static string SwappingText(Endimon OriginalEndimon, Endimon ReplacementEndimon)
     {
-        return OriginalEndimon.GetName() + " is switching out for " + ReplacementEndimon.GetName() + ".";
+        string tempString = "";
+        if (OriginalEndimon.GetActiveNumber() == 0 || OriginalEndimon.GetActiveNumber() == 1)
+        {
+            tempString += "(Player): ";
+        }
+        else
+        {
+            tempString += "(AI): ";
+        }
+        tempString += OriginalEndimon.GetName() + " is switching out for " + ReplacementEndimon.GetName() + ".";
+        return tempString;
     }
 
     //Used when an Endimon has died
@@ -214,9 +259,20 @@ public class BattleTextController {
     //Used when a player has won/lost the game
     public static string GameOverText(bool PlayerWon)
     {
+        string text = "";
         if(PlayerWon)
         {
-            return "You have defeated the opponent's whole team! You've claimed victory!";
+            text = "You have defeated the opponent's whole team! You've claimed victory!";
+            if(GameProfile.PlayingACampaignBattle)
+            {
+                if (GameProfile.HighestFinishedLevel == 6)
+                    text += "You've are the grand champion!";
+                else
+                {
+                    text += "You have unlocked the next campaign battle!";
+                }
+            }
+            return text;
         }
         else
         {
