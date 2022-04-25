@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using DamageNumbersPro;
 
 public class BattleController : MonoBehaviour
 {
@@ -67,10 +68,12 @@ public class BattleController : MonoBehaviour
     private Animator[] EndimonAnims;
 
     //Arrays that hold the particle effects for all actions in the game (public as other functions may utilize these at will)
-    //9 Effects: Pyro/Frost/Electro/Nature/Shadow/Hit/Dying/Active/New
+    //9 Effects (0-8): Pyro/Frost/Electro/Earth/Shadow/Hit/Dying/Active/New
     public ParticleSystem[] AttackEffectParticles;
-    //12 Effects: UseItem/Sleep/Poison/Paralyze/Confuse/HealOT/HealOneTime/AttackUp/DefenseUp/Fire/Blizzard/Shadow Globals
+    //12 Effects (0-11): UseItem/Sleep/Poison/Paralyze/Confuse/HealOT/HealOneTime/AttackUp/DefenseUp/Fire/Blizzard/Shadow Globals
     public ParticleSystem[] StatusEffectParticles;
+    //8 Types (0-7): Pyro/Frost/Electro/Earth/Shadow/Healing/Poison/Blizzard/Normal
+    public DamageNumber[] DmgNumbers;
 
     //Saved particles that will persist throughout the game (4 slots for if an effect is on each Endimon)
     private ParticleSystem ActiveTurnParticle;
@@ -141,12 +144,13 @@ public class BattleController : MonoBehaviour
         //Insert the Effects into the arrays
         AttackEffectParticles = new ParticleSystem[9];
         StatusEffectParticles = new ParticleSystem[12];
+        
         BoxSprites = new Sprite[10];
 
         AttackEffectParticles[0] = Resources.Load("ParticleEffects/FireHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[1] = Resources.Load("ParticleEffects/FrostHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[2] = Resources.Load("ParticleEffects/ElectroHit", typeof(ParticleSystem)) as ParticleSystem;
-        AttackEffectParticles[3] = Resources.Load("ParticleEffects/NatureHit", typeof(ParticleSystem)) as ParticleSystem;
+        AttackEffectParticles[3] = Resources.Load("ParticleEffects/EarthHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[4] = Resources.Load("ParticleEffects/ShadowHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[5] = Resources.Load("ParticleEffects/EndimonHit", typeof(ParticleSystem)) as ParticleSystem;
         AttackEffectParticles[6] = Resources.Load("ParticleEffects/EndimonDied", typeof(ParticleSystem)) as ParticleSystem;
@@ -511,15 +515,19 @@ public class BattleController : MonoBehaviour
         Debug.Log("I decided on putting: " + EndimonToPutIn.GetName() + " in box number: " + UIBox);
         ActiveEndimonPictures[UIBox].sprite = EndimonToPutIn.GetEndimonLargeImage();
         ActiveEndimonNames[UIBox].text = EndimonToPutIn.GetName();
-        ActiveEndimonHealth[UIBox].text = EndimonToPutIn.GetCurrentHP() + "/" + EndimonToPutIn.GetHealth();
+        ActiveEndimonHealth[UIBox].text = "HP: " + EndimonToPutIn.GetCurrentHP() + "/" + EndimonToPutIn.GetHealth();
         Destroy(ActiveEndimonModels[EndimonToPutIn.GetActiveNumber()]);
         ActiveEndimonModels[EndimonToPutIn.GetActiveNumber()] =
             InsertModel(EndimonToPutIn.GetModelNumber(), ActiveEndimonLocations[EndimonToPutIn.GetActiveNumber()]);
         EndimonAnims[EndimonToPutIn.GetActiveNumber()] = ActiveEndimonModels[EndimonToPutIn.GetActiveNumber()].GetComponent<Animator>();
         Instantiate(AttackEffectParticles[8], ActiveEndimonLocations[EndimonToPutIn.GetActiveNumber()].transform.position, ActiveEndimonLocations[EndimonToPutIn.GetActiveNumber()].transform.rotation);
+        AttachParticles(EndimonToPutIn);
         AudioSource.PlayClipAtPoint(Audio.SwapIn, GameObject.Find("MainCamera").transform.position);
-        UpdateStatusEffectBoxes(EndimonToPutIn, -1);
         EndimonToPutIn.DecreaseStatusEffectTurns();
+        UpdateStatusEffectBoxes(EndimonToPutIn, -1);
+        UpdateHealthValues();
+        Debug.Log("Turn order after swap: " + MainPlayer.GetActiveEndimon1().GetEndimonTurnTaken() + "/" + MainPlayer.GetActiveEndimon2().GetEndimonTurnTaken()
+            + "/" + MainAI.GetActiveEndimon1().GetEndimonTurnTaken() + "/" + MainAI.GetActiveEndimon2().GetEndimonTurnTaken());
     }
 
     //Update the health values on the display for each Endimon
@@ -586,7 +594,7 @@ public class BattleController : MonoBehaviour
             //If there are any turns left on the harmful effect, keep the box on 
             if (turns[1] > 0)
             {
-                Debug.Log("Effect: " + e.GetEndimonPostiveEffect() + " is still active for " + turns[1] + " turns");
+                Debug.Log("Effect: " + e.GetEndimonNegativeEffect() + " is still active for " + turns[1] + " turns");
                 StatusesBoxes[offset + 1].gameObject.SetActive(true);
                 StatusesText[offset + 1].gameObject.SetActive(true);
                 if (index != -1)
@@ -742,6 +750,7 @@ public class BattleController : MonoBehaviour
             //Do the healing
             Debug.Log("Synthesis heals for 25");
             AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+            SpawnText("Healing", 25, ActiveEndimon);
             ActiveEndimon.TakeDamage(-25);
             UpdateHealthValues();
 
@@ -763,8 +772,9 @@ public class BattleController : MonoBehaviour
             Debug.Log("Posion overtime effect dealing 25 dmg");
             AudioSource.PlayClipAtPoint(Audio.Poison, GameObject.Find("MainCamera").transform.position);
             EndimonAnims[ActiveEndimon.GetActiveNumber()].Play(ActiveEndimon.GetAnimationName(3));
-            ActiveEndimon.TakeDamage(-25);
-            ActiveEndimon.SetDefense(10);
+            SpawnText("Poison", 25, ActiveEndimon);
+            ActiveEndimon.TakeDamage(25);
+            ActiveEndimon.SetDefense(-10);
             UpdateHealthValues();
             Debug.Log("New defense: " + ActiveEndimon.GetDefense());
 
@@ -788,6 +798,7 @@ public class BattleController : MonoBehaviour
             Debug.Log("Blizzard hit for 25");
             EndimonAnims[ActiveEndimon.GetActiveNumber()].Play(ActiveEndimon.GetAnimationName(3));  //Take damage animation
             AudioSource.PlayClipAtPoint(Audio.GlobalBlizzard, GameObject.Find("MainCamera").transform.position);
+            SpawnText("Blizzard", 25, ActiveEndimon);
             ActiveEndimon.TakeDamage(25);
             UpdateHealthValues();
 
@@ -803,7 +814,7 @@ public class BattleController : MonoBehaviour
     //Function looks to see if the Endimon that was hit just died
     public IEnumerator EndTurnDeath()
     {
-        if (tempEndimon != null && tempEndimon.GetCurrentHP() <= 0)
+        if ((tempEndimon != null && tempEndimon.GetCurrentHP() <= 0))
         {
             //Play the death animation for the Endimon that died
             CameraController.SetGameStatus("Defending", tempEndimon);
@@ -866,6 +877,17 @@ public class BattleController : MonoBehaviour
                         ActiveEndimonModels[1].SetActive(false);
                         MainPlayer.GetActiveEndimon2().SetTurnStatus(true);
                     }
+
+                    if (PositiveParticle[tempEndimon.GetActiveNumber()] != null)
+                    {
+                        PositiveParticle[tempEndimon.GetActiveNumber()].Stop();
+                        PositiveParticle[tempEndimon.GetActiveNumber()].Clear();
+                    }
+                    if (NegativeParticle[tempEndimon.GetActiveNumber()] != null)
+                    {
+                        NegativeParticle[tempEndimon.GetActiveNumber()].Stop();
+                        NegativeParticle[tempEndimon.GetActiveNumber()].Clear();
+                    }
                 }
             }
 
@@ -905,6 +927,17 @@ public class BattleController : MonoBehaviour
                         AI2EndimonPanel.SetActive(false);
                         ActiveEndimonModels[3].SetActive(false);
                         MainAI.GetActiveEndimon2().SetTurnStatus(true);
+                    }
+
+                    if (PositiveParticle[tempEndimon.GetActiveNumber()] != null)
+                    {
+                        PositiveParticle[tempEndimon.GetActiveNumber()].Stop();
+                        PositiveParticle[tempEndimon.GetActiveNumber()].Clear();
+                    }
+                    if (NegativeParticle[tempEndimon.GetActiveNumber()] != null)
+                    {
+                        NegativeParticle[tempEndimon.GetActiveNumber()].Stop();
+                        NegativeParticle[tempEndimon.GetActiveNumber()].Clear();
                     }
                 }
             }
@@ -958,7 +991,7 @@ public class BattleController : MonoBehaviour
         ResetAnySelections();                         //Reset any selections made by the player/AI
 
         //See if we should end the round now (Has everyone gone?)
-        Debug.Log("Turn order at the end of this turn: " + MainPlayer.GetActiveEndimon1().GetEndimonTurnTaken() + "/" + MainPlayer.GetActiveEndimon2().GetEndimonTurnTaken()
+        Debug.Log("Turn order after swap: " + MainPlayer.GetActiveEndimon1().GetEndimonTurnTaken() + "/" + MainPlayer.GetActiveEndimon2().GetEndimonTurnTaken()
             + "/" + MainAI.GetActiveEndimon1().GetEndimonTurnTaken() + "/" + MainAI.GetActiveEndimon2().GetEndimonTurnTaken());
 
         if (MainPlayer.GetActiveEndimon1().GetEndimonTurnTaken() && MainPlayer.GetActiveEndimon2().GetEndimonTurnTaken() &&
@@ -1125,50 +1158,59 @@ public class BattleController : MonoBehaviour
     }
 
     //After using a special ability, a particle effect will be attached accordingly if there is a status
-    public void CastAbilityEffect(int particleIndex, Endimon e)
+    public void CastAbilityEffect(int particleIndex, Endimon defender, Endimon attacker)
     {
         Vector3 location;
-        if (e.GetActiveNumber() == 0 || e.GetActiveNumber() == 1)
+        if (defender.GetActiveNumber() == 0 || defender.GetActiveNumber() == 1)
         {
-            location = new Vector3(ActiveEndimonLocations[e.GetActiveNumber()].transform.position.x + 2.5f,
-              ActiveEndimonLocations[e.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[e.GetActiveNumber()].transform.position.z);
+            location = new Vector3(ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.x + 2.5f,
+              ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.z);
         }
         else
         {
-            location = new Vector3(ActiveEndimonLocations[e.GetActiveNumber()].transform.position.x + -2.5f,
-              ActiveEndimonLocations[e.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[e.GetActiveNumber()].transform.position.z);
+            location = new Vector3(ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.x + -2.5f,
+              ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.y + 1.75f, ActiveEndimonLocations[defender.GetActiveNumber()].transform.position.z);
         }
 
         if(particleIndex == 8)
         {
-            location = new Vector3(location.x, location.y, location.z - 5f);
+            if (defender.GetActiveNumber() == 0 || defender.GetActiveNumber() == 1)
+            {
+                location = new Vector3(location.x, location.y, location.z - 5f);
+            }
+            else
+            {
+                location = new Vector3(location.x, location.y, location.z + 5f);
+            }
         }
 
-        if (e.GetEndimonMove3().GetHarmful())
+        if (attacker.GetEndimonMove3().GetHarmful())
         {
-            if (NegativeParticle[e.GetActiveNumber()] != null)
+            if (NegativeParticle[defender.GetActiveNumber()] != null)
             {
-                NegativeParticle[e.GetActiveNumber()].Stop();
-                NegativeParticle[e.GetActiveNumber()].Clear();
+                NegativeParticle[defender.GetActiveNumber()].Stop();
+                NegativeParticle[defender.GetActiveNumber()].Clear();
             }
             //Some Endimon miss attacks causing no particles to be necessary
             if (particleIndex > -1)
             {
-                NegativeParticle[e.GetActiveNumber()] = Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[e.GetActiveNumber()].transform.rotation);
+                Debug.Log("We put on index number: " + particleIndex + " on the Endimon");
+                NegativeParticle[defender.GetActiveNumber()] = Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[defender.GetActiveNumber()].transform.rotation);
             }
         }
         else
         {
             //Index 6 is a instant cast heal, all other abilities should override what is already casted
-            if (PositiveParticle[e.GetActiveNumber()] != null && particleIndex != 6)
+            if (PositiveParticle[defender.GetActiveNumber()] != null && particleIndex != 6)
             {
-                PositiveParticle[e.GetActiveNumber()].Stop();
-                PositiveParticle[e.GetActiveNumber()].Clear();
+                PositiveParticle[defender.GetActiveNumber()].Stop();
+                PositiveParticle[defender.GetActiveNumber()].Clear();
             }
             //Ensure that this was a valid index in the first place
-            if (particleIndex > 0)
+            if (particleIndex > -1)
             {
-                PositiveParticle[e.GetActiveNumber()] = Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[e.GetActiveNumber()].transform.rotation);
+                Debug.Log("We put on index number: " + particleIndex + " on the Endimon");
+                PositiveParticle[defender.GetActiveNumber()] = Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[defender.GetActiveNumber()].transform.rotation);
             }
         }
     }
@@ -1196,13 +1238,13 @@ public class BattleController : MonoBehaviour
     }
 
     //Function used to display a particle effect at a specific Endimon location
-    public void PlayParticleAtLocation(Endimon TargetEndimon, bool isAttackParticles, int particleIndex, float heightAdjustment, float sideAdjustment)
+    public ParticleSystem PlayParticleAtLocation(Endimon TargetEndimon, bool isAttackParticles, int particleIndex, float heightAdjustment, float sideAdjustment)
     {
         if (isAttackParticles)
         {
             Vector3 location = new Vector3(ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.x + sideAdjustment, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.y + heightAdjustment,
                 ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
-            Instantiate(AttackEffectParticles[particleIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
+            return Instantiate(AttackEffectParticles[particleIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
         }
         else
         {
@@ -1210,9 +1252,110 @@ public class BattleController : MonoBehaviour
                 ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.position.z);
             if(particleIndex == 8)
             {
-                location = new Vector3(location.x, location.y, location.z - 5f);
+                if (TargetEndimon.GetActiveNumber() == 0 || TargetEndimon.GetActiveNumber() == 1)
+                {
+                    location = new Vector3(location.x, location.y, location.z - 5f);
+                }
+                else
+                {
+                    location = new Vector3(location.x, location.y, location.z + 5f);
+                }
             }
-            Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
+            return Instantiate(StatusEffectParticles[particleIndex], location, ActiveEndimonLocations[TargetEndimon.GetActiveNumber()].transform.rotation);
+        }
+    }
+
+    public void AttachParticles(Endimon e)
+    {
+        float side = 0;
+        Debug.Log("Tring to attach particles");
+        if(e.GetActiveNumber() == 0 || e.GetActiveNumber() == 1)
+        {
+            side = 2.5f;
+        }
+        else
+        {
+            side = -2.5f;
+        }
+
+        if (e.GetEndimonPostiveEffect() != Endimon.StatusEffects.Nothing)
+        {
+            Debug.Log("Found positive effect");
+            if(e.GetEndimonPostiveEffect() == Endimon.StatusEffects.AttackUp || e.GetEndimonPostiveEffect() == Endimon.StatusEffects.HeatUp || e.GetEndimonPostiveEffect() == Endimon.StatusEffects.Screech)
+            {
+                PositiveParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 7, 1.5f, side);
+            }
+            else if(e.GetEndimonPostiveEffect() == Endimon.StatusEffects.DefenseUp || e.GetEndimonPostiveEffect() == Endimon.StatusEffects.IcicleBaracade || e.GetEndimonPostiveEffect() == Endimon.StatusEffects.Speedray)
+            {
+                PositiveParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 8, 1.5f, side);
+            }
+            else if(e.GetEndimonPostiveEffect() == Endimon.StatusEffects.Synthesis)
+            {
+                PositiveParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 5, 1.5f, side);
+            }
+        }
+
+        if (e.GetEndimonNegativeEffect() != Endimon.StatusEffects.Nothing)
+        {
+            Debug.Log("Found negative effect");
+            if(e.GetEndimonNegativeEffect() == Endimon.StatusEffects.Paralyze)
+            {
+                NegativeParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 3, 1f, side);
+            }
+            else if(e.GetEndimonNegativeEffect() == Endimon.StatusEffects.Sleep)
+            {
+                NegativeParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 1, 1f, side);
+            }
+            else if(e.GetEndimonNegativeEffect() == Endimon.StatusEffects.Confusion)
+            {
+                NegativeParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 4, 1f, side);
+            }
+            else if(e.GetEndimonNegativeEffect() == Endimon.StatusEffects.Poison)
+            {
+                NegativeParticle[e.GetActiveNumber()] = PlayParticleAtLocation(ActiveEndimon, false, 2, 1f, side);
+            }
+        }
+    }
+
+    public void SpawnText(string typeOfText, int damage, Endimon target)
+    {
+        Vector3 location = new Vector3(ActiveEndimonLocations[target.GetActiveNumber()].transform.position.x, ActiveEndimonLocations[target.GetActiveNumber()].transform.position.y + 8.5f,
+            ActiveEndimonLocations[target.GetActiveNumber()].transform.position.z);
+        if (typeOfText == "Pyro")
+        {
+            DmgNumbers[0].Spawn(location, damage);
+        }
+        else if(typeOfText == "Frost")
+        {
+            DmgNumbers[1].Spawn(location, damage);
+        }
+        else if (typeOfText == "Electro")
+        {
+            DmgNumbers[2].Spawn(location, damage);
+        }
+        else if (typeOfText == "Earth")
+        {
+            DmgNumbers[3].Spawn(location, damage);
+        }
+        else if (typeOfText == "Shadow")
+        {
+            DmgNumbers[4].Spawn(location, damage);
+        }
+        else if (typeOfText == "Healing")
+        {
+            DmgNumbers[5].Spawn(location, damage);
+        }
+        else if (typeOfText == "Poison")
+        {
+            DmgNumbers[6].Spawn(location, damage);
+        }
+        else if (typeOfText == "Blizzard")
+        {
+            DmgNumbers[7].Spawn(location, damage);
+        }
+        else if(typeOfText == "Normal")
+        {
+            DmgNumbers[8].Spawn(location, damage);
         }
     }
 
@@ -1640,7 +1783,7 @@ public class BattleController : MonoBehaviour
                     CameraController.SetGameStatus("Globals", null);
 
                     //All non-target moves are globals, so we will be casting a global effect
-                    int particleIndex = ActiveEndimon.UseSpecialMove(ActiveEndimon, null, ActiveEndimon.GetEndimonMove3()); //No target so null defender
+                    int particleIndex = ActiveEndimon.UseSpecialMove(ActiveEndimon, null, ActiveEndimon.GetEndimonMove3(), this); //No target so null defender
                     AddGlobalEffect(particleIndex);
                     ActiveEndimon.SetTurnStatus(true);
                     BattleText.text = BattleTextController.GlobalText(tempSpecialMove.GetMoveName());
@@ -1720,6 +1863,7 @@ public class BattleController : MonoBehaviour
                 //Damage & Damaged Animation
                 int damage = ActiveEndimon.UseDamageMove(ActiveEndimon, tempMove, tempEndimon, StatusesBoxes, false);
                 BattleText.text = BattleTextController.DefendDamageText(ActiveEndimon, tempMove, tempEndimon, damage, CheckShadowCastStatus());
+                SpawnText(tempMove.GetMoveType().ToString(), damage, tempEndimon);
                 bool died = tempEndimon.TakeDamage(damage);
                 UpdateHealthValues();
                 AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
@@ -1751,19 +1895,19 @@ public class BattleController : MonoBehaviour
                 BattleText.text = BattleTextController.SpecialAbilityText(ActiveEndimon, tempSpecialMove, tempEndimon);
                 yield return new WaitForSeconds(1.5f);
 
-                //Use animation and switch
+                //Use animation
                 EndimonAnims[ActiveEndimon.GetActiveNumber()].Play(ActiveEndimon.GetAnimationName(2));
                 yield return new WaitForSeconds(.5f);
                 CameraController.SetGameStatus("Defending", tempEndimon);
                 yield return new WaitForSeconds(.5f);
 
                 //Place particle effect onto the AI Endimon
-                int particleIndex = ActiveEndimon.UseSpecialMove(ActiveEndimon, tempEndimon, ActiveEndimon.GetEndimonMove3());
+                int particleIndex = ActiveEndimon.UseSpecialMove(ActiveEndimon, tempEndimon, ActiveEndimon.GetEndimonMove3(), this);
                 if(particleIndex == -1)
                 {
                     BattleText.text = "The attack failed";
                 }
-                CastAbilityEffect(particleIndex, tempEndimon);
+                CastAbilityEffect(particleIndex, tempEndimon, ActiveEndimon);
 
                 yield return new WaitForSeconds(1.5f);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
@@ -1947,7 +2091,7 @@ public class BattleController : MonoBehaviour
                 particleIndex = CastItemEffect(tempItem, tempEndimon);
             }
 
-            MainPlayer.UseItem(tempItem, tempEndimon);
+            MainPlayer.UseItem(tempItem, tempEndimon, this);
             MainPlayer.RemoveItem(tempItem);
             UpdateStatusEffectBoxes(tempEndimon, particleIndex);
             yield return new WaitForSeconds(1.5f);
@@ -2055,10 +2199,10 @@ public class BattleController : MonoBehaviour
 
 /*********************
 BUGS
+Rejuv not appearing for an AI usage
+Images not producing sometimes usually when swapping back in (or in general it blows up)
 
 LOOK OUT FOR
-- Continue Adjusting timing of transistions for readability (Add another half second to all but global status stuff)
-
-PRIORITY OF ADDING THINGS
+Random turn skip 2nd player killed by 1st AI swapped in after death, second player skipped
 
 ***********************/

@@ -234,9 +234,10 @@ public class Endimon
         }
 
         //Checking for "ShadowCast" effect, if a non shadow type move is used then the endimon has a chance of missing the attack (0 damage)
-        Color32 black = new Color32(30, 30, 30, 255);
-        if ((GlobalStatuses[8].color == black || GlobalStatuses[9].color == black) && DamageMove.GetMoveType() != Endimontypes.Shadow && !justCalculate)
+        Sprite shadowGlobal = Resources.Load("StatusIcons/ShadowGlobal", typeof(Sprite)) as Sprite;
+        if ((GlobalStatuses[8].sprite == shadowGlobal|| GlobalStatuses[9].sprite == shadowGlobal) && DamageMove.GetMoveType() != Endimontypes.Shadow && !justCalculate)
         {
+            Debug.Log("Move could be 0 by shadow global");
             int rand = Random.Range(1, 11);
             if(rand < 3)
             {
@@ -325,7 +326,7 @@ public class Endimon
 
     //Special move used by an Endimon
     //Return value here relates to the index of the particle to apply
-    public int UseSpecialMove(Endimon Attacker, Endimon Target, SpecialMove UsedMove)
+    public int UseSpecialMove(Endimon Attacker, Endimon Target, SpecialMove UsedMove, BattleController bc)
     {
         //Gives a bit of healing to the targeted Endimon (We will apply negative damage)
         if(UsedMove.GetMoveName() == "Rejuvenation")
@@ -336,6 +337,7 @@ public class Endimon
                 HealthToRestore = (int)(Target.GetHealth() - Target.GetCurrentHP() * -1);
             }
             AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+            bc.SpawnText("Healing", HealthToRestore*-1, Target);
             Target.TakeDamage(HealthToRestore);
             return 6;
         }
@@ -343,7 +345,7 @@ public class Endimon
         else if(UsedMove.GetMoveName() == "Noxious Fumes")
         {
             int rand = Random.Range(1, 101);
-            if(rand <= 50)
+            if(rand < 50)
             {
                 Debug.Log("Sleep attack missed");
                 return -1;

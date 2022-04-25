@@ -193,7 +193,7 @@ public class BattleTextController {
     {
         if(Status == Endimon.StatusEffects.Synthesis)
         {
-            return CurrentEndimon.GetName() + " has been healed 15 health.";
+            return CurrentEndimon.GetName() + " has been slightly healed.";
         }
         else if(Status == Endimon.StatusEffects.Poison)
         {

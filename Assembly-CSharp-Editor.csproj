@@ -767,6 +767,10 @@
       <Project>{07A8DAA0-2658-6753-B081-71DA7AEA60A0}</Project>
       <Name>Assembly-CSharp</Name>
     </ProjectReference>
+    <ProjectReference Include="DamageNumbersPro.csproj">
+      <Project>{AA88C462-AB93-FF38-13FB-60122C5EB938}</Project>
+      <Name>DamageNumbersPro</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

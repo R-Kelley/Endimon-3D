@@ -13,6 +13,7 @@
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\Unity.Analytics.DataPrivacy.dll"
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\UnityEngine.Purchasing.WinRTStub.dll"
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\UnityEngine.Purchasing.AppleCore.dll"
+-a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\DamageNumbersPro.dll"
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\UnityEngine.Purchasing.SecurityCore.dll"
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\UnityEngine.Purchasing.Codeless.dll"
 -a="C:\Users\rarak\OneDrive\Documents\Endimon 3D\Library\PlayerScriptAssemblies\UnityEngine.XR.LegacyInputHelpers.dll"

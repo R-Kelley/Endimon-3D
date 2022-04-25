@@ -249,7 +249,7 @@ public class Character
         return PlayerItems[index];
     }
 
-    public void UseItem(Item UsedItem, Endimon TargettedEndimon)
+    public void UseItem(Item UsedItem, Endimon TargettedEndimon, BattleController bc)
     {
         if (UsedItem.GetItemDuration() > 0)
         {
@@ -270,6 +270,7 @@ public class Character
                     HealthToRestore = (int)(TargettedEndimon.GetHealth() - TargettedEndimon.GetCurrentHP() * -1);
                 }
                 AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText("Healing", HealthToRestore * -1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
             }
             else if(UsedItem.GetEffect() == Endimon.StatusEffects.LargeHealthRestore)
@@ -281,6 +282,7 @@ public class Character
                     HealthToRestore = (int)(TargettedEndimon.GetHealth() - TargettedEndimon.GetCurrentHP() * -1);
                 }
                 AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText("Healing", HealthToRestore * -1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
                 TargettedEndimon.SetDefense(-15);   //Endimon loses part of its defense for getting healed this amount
             }

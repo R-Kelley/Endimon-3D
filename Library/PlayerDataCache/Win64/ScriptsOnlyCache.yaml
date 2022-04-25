@@ -2,13 +2,20 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - BattleController
+    - CFX_AutoDestructShuriken
+    - CFX_LightIntensityFade
+    - CameraController
     - CampaignMapController
     - CharacterSelectController
     - ItemSelectionController
-    - MainMenuAnims
     - MainMenuController
+    - Models
+    DamageNumbersPro.dll:
+    - DamageNumbersPro.DamageNumberMesh
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
+    - UnityEditor.Tilemaps.GridPaletteBrushes
+    - UnityEditor.Tilemaps.GridPalettes
     - UnityEditor.Tilemaps.SceneViewGridManager
     - UnityEditor.Tilemaps.SceneViewOpenTilePaletteHelper
     - UnityEditor.Tilemaps.TileDragAndDropManager
@@ -20,7 +27,14 @@ ScriptsOnlyBuild:
     - TMPro.TMP_Settings
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
+    - TMPro.TextMeshPro
     - TMPro.TextMeshProUGUI
+    UnityEditor.Graphs.dll:
+    - UnityEditor.Graphs.AnimationBlendTree.Graph
+    - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.Graph
+    - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
+    - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -33,6 +47,7 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.CanvasScaler
     - UnityEngine.UI.GraphicRaycaster
     - UnityEngine.UI.Image
+    - UnityEngine.UI.Outline
     - UnityEngine.UI.RawImage
     - UnityEngine.UI.Text
   sceneClasses:
@@ -59,35 +74,67 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 65
       Script: {instanceID: 0}
+    - Class: 74
+      Script: {instanceID: 0}
     - Class: 81
+      Script: {instanceID: 0}
+    - Class: 82
+      Script: {instanceID: 0}
+    - Class: 83
+      Script: {instanceID: 0}
+    - Class: 89
+      Script: {instanceID: 0}
+    - Class: 90
+      Script: {instanceID: 0}
+    - Class: 91
+      Script: {instanceID: 0}
+    - Class: 95
       Script: {instanceID: 0}
     - Class: 104
       Script: {instanceID: 0}
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1582}
     - Class: 114
-      Script: {instanceID: 1902}
+      Script: {instanceID: 1922}
     - Class: 114
-      Script: {instanceID: 2700}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 2846}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2902}
+      Script: {instanceID: 2942}
     - Class: 114
-      Script: {instanceID: 2960}
+      Script: {instanceID: 3000}
     - Class: 114
-      Script: {instanceID: 3080}
+      Script: {instanceID: 3126}
     - Class: 114
-      Script: {instanceID: 3310}
+      Script: {instanceID: 3170}
     - Class: 114
-      Script: {instanceID: 3432}
+      Script: {instanceID: 3368}
+    - Class: 114
+      Script: {instanceID: 3492}
+    - Class: 114
+      Script: {instanceID: 3778}
+    - Class: 114
+      Script: {instanceID: 4040}
+    - Class: 114
+      Script: {instanceID: 4254}
+    - Class: 114
+      Script: {instanceID: 4448}
     - Class: 115
+      Script: {instanceID: 0}
+    - Class: 137
       Script: {instanceID: 0}
     - Class: 157
       Script: {instanceID: 0}
     - Class: 196
+      Script: {instanceID: 0}
+    - Class: 198
+      Script: {instanceID: 0}
+    - Class: 199
+      Script: {instanceID: 0}
+    - Class: 210
       Script: {instanceID: 0}
     - Class: 213
       Script: {instanceID: 0}
@@ -106,9 +153,17 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
       Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
+      Script: {instanceID: 0}
     - Class: 48
+      Script: {instanceID: 0}
+    - Class: 64
       Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
@@ -123,23 +178,27 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1582}
     - Class: 114
-      Script: {instanceID: 1902}
+      Script: {instanceID: 1922}
     - Class: 114
-      Script: {instanceID: 2700}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 2846}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2902}
+      Script: {instanceID: 2942}
     - Class: 114
-      Script: {instanceID: 3080}
+      Script: {instanceID: 3126}
     - Class: 114
-      Script: {instanceID: 3310}
+      Script: {instanceID: 3368}
     - Class: 114
-      Script: {instanceID: 3432}
+      Script: {instanceID: 3492}
     - Class: 114
-      Script: {instanceID: 3584}
+      Script: {instanceID: 3648}
+    - Class: 114
+      Script: {instanceID: 3778}
+    - Class: 114
+      Script: {instanceID: 4212}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 157
@@ -163,9 +222,17 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
       Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
+      Script: {instanceID: 0}
     - Class: 48
+      Script: {instanceID: 0}
+    - Class: 64
       Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
@@ -180,25 +247,29 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1582}
     - Class: 114
-      Script: {instanceID: 1902}
+      Script: {instanceID: 1922}
     - Class: 114
-      Script: {instanceID: 2298}
+      Script: {instanceID: 2322}
     - Class: 114
-      Script: {instanceID: 2700}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 2846}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2902}
+      Script: {instanceID: 2942}
     - Class: 114
-      Script: {instanceID: 3064}
+      Script: {instanceID: 3110}
     - Class: 114
-      Script: {instanceID: 3080}
+      Script: {instanceID: 3126}
     - Class: 114
-      Script: {instanceID: 3310}
+      Script: {instanceID: 3368}
     - Class: 114
-      Script: {instanceID: 3432}
+      Script: {instanceID: 3492}
+    - Class: 114
+      Script: {instanceID: 3778}
+    - Class: 114
+      Script: {instanceID: 4212}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -224,11 +295,23 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
+      Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
       Script: {instanceID: 0}
     - Class: 48
       Script: {instanceID: 0}
+    - Class: 64
+      Script: {instanceID: 0}
     - Class: 81
+      Script: {instanceID: 0}
+    - Class: 82
+      Script: {instanceID: 0}
+    - Class: 83
       Script: {instanceID: 0}
     - Class: 89
       Script: {instanceID: 0}
@@ -237,26 +320,28 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1582}
     - Class: 114
-      Script: {instanceID: 1902}
+      Script: {instanceID: 1922}
     - Class: 114
-      Script: {instanceID: 2700}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 2846}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2902}
+      Script: {instanceID: 2942}
     - Class: 114
-      Script: {instanceID: 3080}
+      Script: {instanceID: 3126}
     - Class: 114
-      Script: {instanceID: 3310}
+      Script: {instanceID: 3368}
     - Class: 114
-      Script: {instanceID: 3432}
+      Script: {instanceID: 3492}
     - Class: 114
-      Script: {instanceID: 3942}
+      Script: {instanceID: 3778}
+    - Class: 114
+      Script: {instanceID: 4010}
+    - Class: 114
+      Script: {instanceID: 4212}
     - Class: 115
-      Script: {instanceID: 0}
-    - Class: 128
       Script: {instanceID: 0}
     - Class: 157
       Script: {instanceID: 0}
@@ -279,11 +364,19 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
+      Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
       Script: {instanceID: 0}
     - Class: 48
       Script: {instanceID: 0}
     - Class: 49
+      Script: {instanceID: 0}
+    - Class: 64
       Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
@@ -298,35 +391,43 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1572}
+      Script: {instanceID: 1582}
     - Class: 114
-      Script: {instanceID: 1902}
+      Script: {instanceID: 1916}
     - Class: 114
-      Script: {instanceID: 2052}
+      Script: {instanceID: 1922}
     - Class: 114
-      Script: {instanceID: 2286}
+      Script: {instanceID: 2310}
     - Class: 114
-      Script: {instanceID: 2458}
+      Script: {instanceID: 2484}
     - Class: 114
-      Script: {instanceID: 2700}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 2846}
+      Script: {instanceID: 2886}
     - Class: 114
-      Script: {instanceID: 2902}
+      Script: {instanceID: 2942}
     - Class: 114
-      Script: {instanceID: 3080}
+      Script: {instanceID: 3126}
     - Class: 114
-      Script: {instanceID: 3310}
+      Script: {instanceID: 3368}
     - Class: 114
-      Script: {instanceID: 3432}
+      Script: {instanceID: 3492}
     - Class: 114
-      Script: {instanceID: 3546}
+      Script: {instanceID: 3608}
     - Class: 114
-      Script: {instanceID: 4140}
+      Script: {instanceID: 3778}
     - Class: 114
-      Script: {instanceID: 4676}
+      Script: {instanceID: 4040}
     - Class: 114
-      Script: {instanceID: 5016}
+      Script: {instanceID: 4212}
+    - Class: 114
+      Script: {instanceID: 4254}
+    - Class: 114
+      Script: {instanceID: 4766}
+    - Class: 114
+      Script: {instanceID: 5116}
+    - Class: 114
+      Script: {instanceID: 5138}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -334,6 +435,12 @@ ScriptsOnlyBuild:
     - Class: 157
       Script: {instanceID: 0}
     - Class: 196
+      Script: {instanceID: 0}
+    - Class: 198
+      Script: {instanceID: 0}
+    - Class: 199
+      Script: {instanceID: 0}
+    - Class: 210
       Script: {instanceID: 0}
     - Class: 213
       Script: {instanceID: 0}
@@ -410,6 +517,18 @@ ScriptsOnlyBuild:
     className: LayoutElement
   - hash:
       serializedVersion: 2
+      Hash: 3867d58545277e4e70f2b371671722eb
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro
+    className: DamageNumberGUI
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Internal
+    className: DNPPresetEditor
+  - hash:
+      serializedVersion: 2
       Hash: 6bc76e17f0d5e93f3eea7f5a2fe227f3
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -434,16 +553,34 @@ ScriptsOnlyBuild:
     className: Shadow
   - hash:
       serializedVersion: 2
+      Hash: 3f5031037e63abe5dcf87c278e01a4de
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_Demo_RotateCamera
+  - hash:
+      serializedVersion: 2
+      Hash: 660deb0ce569359218f0ba85b7ce0e3a
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_LightIntensityFade
+  - hash:
+      serializedVersion: 2
       Hash: 300fd99066f8c288e85f5e81ce65fe34
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
     className: TMP_FontAsset
   - hash:
       serializedVersion: 2
-      Hash: ee8bf738d9fd472116e36d0004deccb4
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: MainMenuAnims
+      Hash: 210c769b209820fded8f43e758c5d311
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_FallingCube
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_GUI
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
@@ -500,6 +637,18 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
+      Hash: bc1c59650cb45c34687ce3e817d14b0e
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_CubeHighlight
+  - hash:
+      serializedVersion: 2
+      Hash: dad3a1f1e1ecb4691721bab721edd60a
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_AutoRotate
+  - hash:
+      serializedVersion: 2
       Hash: a325152ad9563ed900af221c132fea36
     assemblyName: UnityEngine.Advertisements.dll
     namespaceName: UnityEngine.Advertisements.Utilities
@@ -510,6 +659,18 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: CanvasScaler
+  - hash:
+      serializedVersion: 2
+      Hash: 2fdc0f403ac80a22761e9355cd6df588
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Internal
+    className: DNPPreset
+  - hash:
+      serializedVersion: 2
+      Hash: 4fe358e289678dc0bb5c9f46cd5ac670
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: 
+    className: DNP_UIMove
   - hash:
       serializedVersion: 2
       Hash: cf9f5cf2c3145a37ac07f00e50e460f9
@@ -554,7 +715,7 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
-      Hash: a56f17d2502060154d85074a26de923c
+      Hash: 0f029cd0ab6a0feb9aba316d39a7bf36
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: BattleController
@@ -590,7 +751,7 @@ ScriptsOnlyBuild:
     className: GraphicRaycaster
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+      Hash: a2d4f8a2ac979089923687e6f4ed4b7c
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: CameraController
@@ -614,10 +775,28 @@ ScriptsOnlyBuild:
     className: TMP_SpriteAnimator
   - hash:
       serializedVersion: 2
+      Hash: 2ba029f12a9c72ce1d6421a8e40c61d1
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_CubeSpawner
+  - hash:
+      serializedVersion: 2
+      Hash: 1d0beb1a2d4edee4c06b6835632e83a3
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_AutoStopLoopedEffect
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestTools.TestRunner.Callbacks
     className: TestResultRendererCallback
+  - hash:
+      serializedVersion: 2
+      Hash: 9645f4ad78ec3b430445587f20c828d6
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: RandomSample
   - hash:
       serializedVersion: 2
       Hash: 748dd2a2a28da4e618912da5ac45684b
@@ -644,6 +823,12 @@ ScriptsOnlyBuild:
     className: MarkerTrack
   - hash:
       serializedVersion: 2
+      Hash: 58bbcb1b304f960df71b9914867fdaed
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_Enemy
+  - hash:
+      serializedVersion: 2
       Hash: 8e6ceabfd38a184413d69b7db56c89cc
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestTools
@@ -660,6 +845,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: ToggleGroup
+  - hash:
+      serializedVersion: 2
+      Hash: e70e7b311a1620c2e899545b2e1fdfae
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_Demo_RandomDirectionTranslate
   - hash:
       serializedVersion: 2
       Hash: 4fd8bf02e3089425d3502e26c44ba31a
@@ -704,12 +895,6 @@ ScriptsOnlyBuild:
     className: PlayableTrack
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: BattleTextController
-  - hash:
-      serializedVersion: 2
       Hash: 3164bc883ff663a5cdb32d1ef7e7c0c5
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -740,10 +925,22 @@ ScriptsOnlyBuild:
     className: BaseInput
   - hash:
       serializedVersion: 2
+      Hash: faec35522c2879cac790871fc888dbb0
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_Crosshair
+  - hash:
+      serializedVersion: 2
       Hash: 88e2c6f501bf5dead831a3e44c30de40
     assemblyName: UnityEngine.Advertisements.dll
     namespaceName: UnityEngine.Advertisements.Platform.Editor
     className: BannerPlaceholder
+  - hash:
+      serializedVersion: 2
+      Hash: 4aac268d7e435f7a65add91aaba819a4
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_Demo_RandomDir
   - hash:
       serializedVersion: 2
       Hash: 6d7e0358ea0e71f90370f0dad6458388
@@ -800,10 +997,34 @@ ScriptsOnlyBuild:
     className: EventTrigger
   - hash:
       serializedVersion: 2
+      Hash: 3867d58545277e4e70f2b371671722eb
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro
+    className: DamageNumberMesh
+  - hash:
+      serializedVersion: 2
+      Hash: 671420ad2c33f1ddaf6d076461adf15a
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_Demo_Translate
+  - hash:
+      serializedVersion: 2
       Hash: a81d4c2c1cf3ad164d277d927a193679
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: Dropdown
+  - hash:
+      serializedVersion: 2
+      Hash: 9f80bef30612a3de237a5a9a09bca7a8
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_SineFadeText
+  - hash:
+      serializedVersion: 2
+      Hash: f4f2260a7cffa42b905a6833929f3c42
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_PrefabSettings
   - hash:
       serializedVersion: 2
       Hash: a5781dc71a671b1ad2b38de19f24b71f
@@ -812,10 +1033,22 @@ ScriptsOnlyBuild:
     className: ActivationTrack
   - hash:
       serializedVersion: 2
+      Hash: 876ab2b9f49a168965b16fa8a49c82fc
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_UIArea
+  - hash:
+      serializedVersion: 2
       Hash: c3d3430df9e3ea95e3e3d587961390fb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: SignalTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 8be256a101792c42d4000ba06662c373
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Models
   - hash:
       serializedVersion: 2
       Hash: aba7b2852ef61d175dd9602e7723d5e5
@@ -872,10 +1105,22 @@ ScriptsOnlyBuild:
     className: TMP_Settings
   - hash:
       serializedVersion: 2
+      Hash: a7eed741e90f74b1d3b0e6673ca612f3
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_Player
+  - hash:
+      serializedVersion: 2
       Hash: 893dbdbfe611d62e230a686ea89f1efd
     assemblyName: UnityEngine.XR.LegacyInputHelpers.dll
     namespaceName: UnityEngine.XR.LegacyInputHelpers
     className: SwingArmModel
+  - hash:
+      serializedVersion: 2
+      Hash: 421b20ccd7815ebee5e2b14a986d2efc
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_Demo_New
   - hash:
       serializedVersion: 2
       Hash: 06fe0c6f1328047d1063ec79291e7f8a
@@ -884,10 +1129,22 @@ ScriptsOnlyBuild:
     className: IAPListener
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_2DDemo
+  - hash:
+      serializedVersion: 2
       Hash: 6980e81ddc615a861309d2d659cc3760
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
     className: TMP_SubMeshUI
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_DemoManager
   - hash:
       serializedVersion: 2
       Hash: fd68d84f33fad85aac38f2739c0ee270
@@ -896,10 +1153,22 @@ ScriptsOnlyBuild:
     className: TMP_SpriteAsset
   - hash:
       serializedVersion: 2
+      Hash: e4db0ddf42150a3b60bd39cf2bc3def2
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_LightFlicker
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: UnityEngine.Purchasing.Stores.dll
     namespaceName: UnityEngine.Purchasing
     className: UIFakeStoreWindow
+  - hash:
+      serializedVersion: 2
+      Hash: 5d27c6e85ec89cfab8577e9e26695e88
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: CFX_AutoDestructShuriken
   - hash:
       serializedVersion: 2
       Hash: e7a73f5f78ba6445195ec23b74a1ce2d
@@ -920,10 +1189,28 @@ ScriptsOnlyBuild:
     className: AsyncWebUtil
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_Camera
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro
+    className: DamageNumberEditor
+  - hash:
+      serializedVersion: 2
       Hash: 8220b46879dc5e37db1b940c938f5744
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: SignalEmitter
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_CursorHint
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
@@ -942,6 +1229,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.EventSystems
     className: TouchInputModule
+  - hash:
+      serializedVersion: 2
+      Hash: 87b58748dd47622b51395863bf6d0149
+    assemblyName: DamageNumbersPro.dll
+    namespaceName: DamageNumbersPro.Demo
+    className: DNP_VillagerSpawner
   platform: 19
   scenePathNames:
   - Assets/Scenes/MainMenu.unity
@@ -949,4 +1242,5 @@ ScriptsOnlyBuild:
   - Assets/Scenes/CampaignMap.unity
   - Assets/Scenes/ItemSelection.unity
   - Assets/Scenes/Battleground.unity
-  playerPath: C:/Users/rarak/OneDrive/Desktop/Endimon 3D.exe
+  playerPath: C:/Users/rarak/OneDrive/Desktop/College/Thesis/Endimon 3D Build/Endimon
+    3D.exe

@@ -311,6 +311,7 @@ public class AI
                 int damage = AIEndimon.UseDamageMove(AIEndimon, moveToUse, endimonToTarget, GlobalStatuses, false);
                 bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, moveToUse, endimonToTarget, damage, bc.CheckShadowCastStatus());
                 AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText(moveToUse.GetMoveType().ToString(), damage, endimonToTarget);
                 endimonToTarget.TakeDamage(damage);
                 bc.UpdateHealthValues();
                 bc.SetTempEndimon(endimonToTarget);
@@ -343,6 +344,7 @@ public class AI
                 int damage = AIEndimon.UseDamageMove(AIEndimon, moveToUse, endimonToTarget, GlobalStatuses, false);
                 bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, moveToUse, endimonToTarget, damage, bc.CheckShadowCastStatus());
                 AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText(moveToUse.GetMoveType().ToString(), damage, endimonToTarget);
                 endimonToTarget.TakeDamage(damage);
                 bc.UpdateHealthValues();
                 bc.SetTempEndimon(endimonToTarget);
@@ -454,6 +456,7 @@ public class AI
             //Applying the damage 
             int dmg = AIEndimon.UseDamageMove(AIEndimon, KillingMove, Target, GlobalStatuses, false);
             bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, KillingMove, Target, dmg, bc.CheckShadowCastStatus());
+            bc.SpawnText(KillingMove.GetMoveType().ToString(), dmg, Target);
             Target.TakeDamage(dmg);
             bc.UpdateHealthValues();
             bc.SetTempEndimon(Target);
@@ -552,14 +555,15 @@ public class AI
 
                         //Preparing move
                         CameraController.SetGameStatus("Attacking", AIEndimon);
-
+                        Move UsedMove = null;
                         if (move1Dmg > move2Dmg)
                         {
-                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, false);
+                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, true);
                             bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, AIEndimon.GetEndimonMove1(), Target);
                             yield return new WaitForSeconds(1.5f);
                             bc.CastElementalEffect(AIEndimon.GetEndimonMove1(), AIEndimon);
                             anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(0));
+                            UsedMove = AIEndimon.GetEndimonMove1();
                         }
                         else
                         {
@@ -568,6 +572,7 @@ public class AI
                             yield return new WaitForSeconds(1.5f);
                             bc.CastElementalEffect(AIEndimon.GetEndimonMove2(), AIEndimon);
                             anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(1));
+                            UsedMove = AIEndimon.GetEndimonMove2();
                         }
 
                         //Switching camera angle
@@ -575,6 +580,8 @@ public class AI
                         CameraController.SetGameStatus("Defending", Target);
                         yield return new WaitForSeconds(.5f);
 
+                        dmg = AIEndimon.UseDamageMove(AIEndimon, UsedMove, Target, GlobalStatuses, false);
+                        bc.SpawnText(UsedMove.GetMoveType().ToString(), dmg, Target);
                         Target.TakeDamage(dmg);
                         bc.UpdateHealthValues();
                         bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, AIEndimon.GetEndimonMove1(), Target, dmg, bc.CheckShadowCastStatus());
@@ -635,7 +642,7 @@ public class AI
                                
                                     Item UsedItem = AddTurnToItem(ActiveAIEndimon2, AIItems[rand], AIEndimon);
                                     int particleIndex = bc.FindLocationForItemParticle(AIEndimon, ActiveAIEndimon2, UsedItem);
-                                    UseItem(AIItems[rand], ActiveAIEndimon2);
+                                    UseItem(AIItems[rand], ActiveAIEndimon2, bc);
                                     RemoveItem(AIItems[rand]);
                                     bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex);
 
@@ -652,7 +659,7 @@ public class AI
 
                                     Item UsedItem = AddTurnToItem(ActiveAIEndimon1, AIItems[rand], AIEndimon);
                                     int particleIndex = bc.FindLocationForItemParticle(AIEndimon, ActiveAIEndimon1, UsedItem);
-                                    UseItem(AIItems[rand], ActiveAIEndimon1);
+                                    UseItem(AIItems[rand], ActiveAIEndimon1, bc);
                                     RemoveItem(AIItems[rand]);
                                     bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex);
 
@@ -680,7 +687,7 @@ public class AI
 
                                 Item UsedItem = AddTurnToItem(Target, AIItems[rand], AIEndimon);
 
-                                UseItem(UsedItem, Target);
+                                UseItem(UsedItem, Target, bc);
                                 RemoveItem(AIItems[rand]);
                                 int particleIndex = bc.FindLocationForItemParticle(AIEndimon, Target, UsedItem);
                                 bc.UpdateStatusEffectBoxes(Target, particleIndex);
@@ -707,7 +714,7 @@ public class AI
                             bc.BattleText.text = BattleTextController.GlobalText(AIEndimon.GetEndimonMove3().GetMoveName());
 
                             //Global effect can be used here
-                            int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, null, AIEndimon.GetEndimonMove3());
+                            int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, null, AIEndimon.GetEndimonMove3(), bc);
                             bc.AddGlobalEffect(particleIndex);
                             bc.UpdateStatusEffectBoxes(AIEndimon, particleIndex);
 
@@ -717,6 +724,7 @@ public class AI
                         }
                         else if(AIEndimon.GetEndimonMove3().GetHarmful() && Target.GetEndimonNegativeEffect() == Endimon.StatusEffects.Nothing)
                         {
+                            Debug.Log("AI: Using Harmful Special Ability");
                             //Preparing move
                             CameraController.SetGameStatus("Attacking", AIEndimon);
                             bc.BattleText.text = BattleTextController.SpecialAbilityText(AIEndimon, AIEndimon.GetEndimonMove3(), Target);
@@ -729,13 +737,13 @@ public class AI
                             CameraController.SetGameStatus("Defending", Target);
                             yield return new WaitForSeconds(.5f);
 
-                            //Use this effect as it won't override anything
-                            int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, Target, AIEndimon.GetEndimonMove3());
+                            //Hit target with a harmful effect
+                            int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, Target, AIEndimon.GetEndimonMove3(), bc);
                             if (particleIndex == -1)
                             {
                                 bc.BattleText.text = "The attack failed";
                             }
-                            bc.CastAbilityEffect(particleIndex, Target);
+                            bc.CastAbilityEffect(particleIndex, Target, AIEndimon);
                             bc.UpdateStatusEffectBoxes(Target, particleIndex);
 
                             //Waiting action to finish up then switching back
@@ -761,8 +769,8 @@ public class AI
                                 yield return new WaitForSeconds(.5f);
 
                                 //Place it on AI2
-                                int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, ActiveAIEndimon2, AIEndimon.GetEndimonMove3());
-                                bc.CastAbilityEffect(particleIndex, ActiveAIEndimon2);
+                                int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, ActiveAIEndimon2, AIEndimon.GetEndimonMove3(), bc);
+                                bc.CastAbilityEffect(particleIndex, ActiveAIEndimon2, AIEndimon);
                                 bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex);
 
                                 //Waiting action to finish up then switching back
@@ -784,9 +792,9 @@ public class AI
                                 yield return new WaitForSeconds(.5f);
 
                                 //Place it on itself
-                                int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, AIEndimon, AIEndimon.GetEndimonMove3());
-                                bc.CastAbilityEffect(particleIndex, ActiveAIEndimon1);
-                                bc.UpdateStatusEffectBoxes(AIEndimon, particleIndex);
+                                int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, ActiveAIEndimon1, AIEndimon.GetEndimonMove3(), bc);
+                                bc.CastAbilityEffect(particleIndex, ActiveAIEndimon1, AIEndimon);
+                                bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex);
 
                                 //Waiting action to finish up then switching back
                                 yield return new WaitForSeconds(1.5f);
@@ -941,6 +949,12 @@ public class AI
                 return AITeam[i];
             }
         }
+        for(int i = 0; i < AITeam.Length; i++)
+        {
+            if(IsEndimonAlive(AITeam[i]) && AITeam[i].GetName() != ActiveAIEndimon1.GetName() && AITeam[i].GetName() != ActiveAIEndimon2.GetName()) {
+                return AITeam[i];
+            }
+        }
         return null;
     }
 
@@ -1079,7 +1093,7 @@ public class AI
     }
 
     //Function casts the effect of an item
-    public void UseItem(Item UsedItem, Endimon TargettedEndimon)
+    public void UseItem(Item UsedItem, Endimon TargettedEndimon, BattleController bc)
     {
         //Non-instant effect item
         if (UsedItem.GetItemDuration() > 0)
@@ -1102,6 +1116,7 @@ public class AI
 
                 }
                 AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText("Healing", HealthToRestore*-1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
             }
             else if (UsedItem.GetEffect() == Endimon.StatusEffects.LargeHealthRestore)
@@ -1113,6 +1128,7 @@ public class AI
                     HealthToRestore = (int)(TargettedEndimon.GetHealth() - TargettedEndimon.GetCurrentHP() * -1);
                 }
                 AudioSource.PlayClipAtPoint(Audio.Heal, GameObject.Find("MainCamera").transform.position);
+                bc.SpawnText("Healing", HealthToRestore * -1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
                 TargettedEndimon.SetDefense(-15);   //Endimon loses part of its defense for getting healed this amount
             }
