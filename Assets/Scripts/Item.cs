@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Class is a data storage area for an item
 public class Item
 {
     private string ItemName;            //Name of item
     private string ItemDescription;     //A description of what the item does
-    private Sprite ItemImage;
+    private Sprite ItemImage;           //Image of item
     private int ItemDuration;           //The amount of turns the effect lasts (0 for instant effect)
     private bool IsUsableOnTeam;        //Will this be casted on an enemy or ally?
     private bool IsHealing;             //Determine if this item has healing capabilities
@@ -24,6 +25,7 @@ public class Item
         DetermineImage();
     }
 
+    //Figure out which image to allocate to an item absed upon the name
     public void DetermineImage()
     {
         if(ItemName == "Power-Up Candy")

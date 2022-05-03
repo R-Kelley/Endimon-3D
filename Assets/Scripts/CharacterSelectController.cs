@@ -255,6 +255,11 @@ public class CharacterSelectController : MonoBehaviour
     //Button takes you back to the Main Menu, saving nothing here (Even if coming from Campaign)
     public void BackBtnClick()
     {
+        if(GameProfile.PlayingACampaignBattle)
+        {
+            GameProfile.PlayingACampaignBattle = false;
+            GameProfile.CurrentCampaignBattle = 0;
+        }
         SceneManager.LoadScene("MainMenu");
     }
 

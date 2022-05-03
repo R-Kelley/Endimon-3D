@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//Converts to an AI upon being selected
+//Class is a data storage area for a preset AI, converts to an AI upon being selected
 public class Trainer
 {
     private string TrainerName;     //Name of Trainer

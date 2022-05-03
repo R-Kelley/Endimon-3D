@@ -159,8 +159,8 @@ public class CampaignMapController : MonoBehaviour
         AudioSource.PlayClipAtPoint(Audio.ButtonClick, GameObject.Find("MainCamera").transform.position);
         if (LevelSelected <= GameProfile.HighestFinishedLevel + 1)
         {
-            //*WE NEED TO ACTUALLY DEVELOP THE TEAM AT SOME POINT
             GameProfile.PlayingACampaignBattle = true;
+            GameProfile.CurrentCampaignBattle = LevelSelected;
             GameProfile.ConvertTrainerToAI(LevelSelected-1);    //We want the index here so subtract one
             SceneManager.LoadScene("CharacterSelection");
         }

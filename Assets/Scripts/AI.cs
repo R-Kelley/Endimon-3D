@@ -1,22 +1,19 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-//Class is more of a data storage unit, however it will be casting effects and needs to be a monobehavior
+//Holds the data for an AI player in the game
 public class AI
 {
-    private string AIName;              //Name of AI for use in dialog boxes
     private Endimon[] AITeam;           //Roster of 4 Endimon
     private Item[] AIItems;             //Selected Items (0-5 depending on difficulty)
+    private Endimon ActiveAIEndimon1;   //First slotted Endimon in combat
+    private Endimon ActiveAIEndimon2;   //Second slotted Endimon in combat
+    private Endimon Target;             //The current Target of the AI in combat (Hard AI only)
+    private string LastTarget = "";     //The name of the Endimon who was previously being targeted by the AI
     private CharacterSelectController.DifficultySelection AIDifficulty;     //AI's difficulty (Easy/Medium/Hard)
-    private Endimon ActiveAIEndimon1;   //First slotted Endimon in the battle
-    private Endimon ActiveAIEndimon2;   //Second slotted Endimon in the battle
 
-    private Endimon Target;
-    private string LastTarget = "";
-
-    //Constructor: Build an AI depeneding on the difficulty. If this is a campaign battle, skip this as the game will load in preset values
+    //Constructs an AI based upon the selected difficulty
     public AI (CharacterSelectController.DifficultySelection difficulty)
     {
         //Use the given difficulty to create an AI. Ignore when this has already been created for a campaign
@@ -40,26 +37,23 @@ public class AI
 
     //Generates the AI team. Will choose 4 random Endimon for their team and take no items with them
     public void CreateEasyAI()
-    {
-        int rand; 
-        //*Do name generation here
+    { 
 
-        //Sets item value, will make a null value as easy difficulty won't use any items
+        //Sets up storage for Items and Endimon 
         AIItems = new Item[1];
         AIItems[0] = null;
-
-        //Set up creation for making a team
         AITeam = new Endimon[4];
-        int counter = 0;
-        bool canAdd = true;
+        int counter = 0;    //Total in party already
+        bool canAdd = true; //Endimon is allowed to be added to team
+        int rand = 0;
         
         //While the team is not full, go through and add Endimon, checking each time if it'll be a duplicate
         while(counter != 4)
         {
-            rand = Random.Range(0, 9);
+            rand = Random.Range(0, 10);
             if (rand > -1 && rand < 10)
             {
-                //Check for duplicate
+                //Check for duplicate (not allowed)
                 for(int i = 0; i < counter; i++)
                 {
                     if(AITeam[i].GetName() == GameProfile.Roster[rand].GetName())
@@ -68,11 +62,10 @@ public class AI
                         break;
                     }
                 }
-                //If not a dupe
+                //If not a dupe Endimon, insert onto team
                 if (canAdd)
                 {
                     AITeam[counter] = GameProfile.CreateEndimonInstance(rand);
-                    Debug.Log("AI added to party: " + AITeam[counter].GetName());
                     counter++;
                 }
                 canAdd = true;
@@ -80,8 +73,7 @@ public class AI
         }
     }
 
-    //Medium AI will generate a team of unique Endimon of all different types, making sure they have 1 each
-    //They will take only positive effect items
+    //Medium AI will generate a team of unique Endimon of all different types, and take 3 positive effect items
     public void CreateMediumAI()
     {
         AIItems = new Item[3];
@@ -89,6 +81,7 @@ public class AI
         int counter = 0;
         bool canAdd = true;
         int rand;
+
         while(counter != 4)
         {
             rand = Random.Range(0, 10);
@@ -100,35 +93,40 @@ public class AI
                     break;
                 }
             }
+
+            //If not a duplicate and is a unique element, add to the team
             if(canAdd)
             {
                 AITeam[counter] = GameProfile.CreateEndimonInstance(rand);
-                Debug.Log("AI added to party: " + AITeam[counter].GetName());
                 counter++;
             }
             canAdd = true;
         }
+
+        //Reset and now search through items
         counter = 0;
         while(counter != 3)
         {
             rand = Random.Range(0, 8);
+            //Only look for effects that can be used on their own team
             if (GameProfile.Items[rand].GetUsabilityTeam())
             {
                 AIItems[counter] = GameProfile.CreateItemInstance(rand);
-                Debug.Log("Item added to AI inv: " + AIItems[counter].GetItemName());
                 counter++;
             }
         }
     }
 
-    //Hard AI will generate a team of unique Endimon in terms of roles, they will select 1 Tank, 1 Attacker, 1 Utility, and 1 Balanced
+    //Hard AI will generate a team of unique Endimon in terms of roles, they will select 1 each from Tank, Balanced, Attacker, and Utility
+    //They will also get 5 items of their own choosing
     public void CreateHardAI()
     {
         AIItems = new Item[5];
         AITeam = new Endimon[4];
         int counter = 0;
         bool canAdd = true;
-        string roleToLookFor = "Balanced";
+        string roleToLookFor = "Balanced";  //Specifies what Endimmon role that is accepted
+
         while (counter != 4)
         {
             //Switch roles everytime we find an Endimon
@@ -146,6 +144,7 @@ public class AI
             }
 
             int rand = Random.Range(0, 10);
+
             //Determine if we can add this Endimon
             for (int i = 0; i < counter; i++)
             {
@@ -155,28 +154,26 @@ public class AI
                 }
             }
 
+            //If it met the requirements to be added, insert into the array
             if (canAdd)
             {
                 AITeam[counter] = GameProfile.CreateEndimonInstance(rand);
-                Debug.Log("AI added to party: " + AITeam[counter].GetName());
                 counter++;
             }
             canAdd = true;
         }
 
+        //Reset and now pick 5 items
         counter = 0;
-        Debug.Log("Finished filling in party, now to do items");
         while (counter != 5)
         {
             int rand = Random.Range(0, 8);
-            Debug.Log("Rand: " + rand);
             AIItems[counter] = GameProfile.CreateItemInstance(rand);
-            Debug.Log("Item added to AI inv: " + AIItems[counter].GetItemName());
             counter++;
         }
     }
 
-    //Trainer will randomly use moves without care, 90% chance to attack, 10% to swap at random 0% chance to use item and special moves
+    //AI will randomly use moves without care, 80% chance to attack, 20% to swap at random 0% chance to use item and special moves
     public IEnumerator DecidingActionEasy(BattleController bc, Endimon AIEndimon, Animator[] anims, Image[] GlobalStatuses)
     {
         int rand;
@@ -185,22 +182,26 @@ public class AI
 
         //Will first decide whether or not to switch out an Endimon on the team or do damage
         rand = Random.Range(1, 10);
-        if(rand == 1 && CanAISwap())    //Swap out Endimon
+
+        //Determined we will swap some Endimon out
+        if(rand < 3 && CanAISwap())
         {
             //Randomly select and Endimon to put in
             while (true)
             {
                 rand = Random.Range(1, 4);
+                //Search for an Endimon that is alive and is not on the field right now
                 if (AITeam[rand].GetCurrentHP() > 0 && AITeam[rand].GetName() != ActiveAIEndimon1.GetName() && AITeam[rand].GetName() != ActiveAIEndimon2.GetName())
                 {
                     endimonToTarget = AITeam[rand];
-                    Debug.Log("Swapping in for AI: " + endimonToTarget.GetName());
                     break;
                 }
             }
 
             //Figure out which Endimon on the field to swap out
             rand = Random.Range(1, 11);
+
+            //Swap out the first slotted Endimon on the field
             if(rand > 5)
             {
                 //Setting up to swap
@@ -211,13 +212,13 @@ public class AI
 
                 //Swapping
                 SwapEndimonOnTurn(1, endimonToTarget);
-                Debug.Log("Before changing UI, active endimon is: " + ActiveAIEndimon1.GetName() + " it's box number is: " + ActiveAIEndimon1.GetActiveNumber());
                 bc.SwitchEndimonUI(ActiveAIEndimon1, ActiveAIEndimon1.GetActiveNumber());
 
                 //Waiting action to finish up then switching back
                 yield return new WaitForSeconds(1f);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
             }
+            //Swap the second slotted Endimon instead
             else
             {
                 //Setting up to swap
@@ -228,7 +229,6 @@ public class AI
 
                 //Swapping
                 SwapEndimonOnTurn(2, endimonToTarget);
-                Debug.Log("Before changing UI, active endimon is: " + ActiveAIEndimon2.GetName() + " it's box number is: " + ActiveAIEndimon2.GetActiveNumber());
                 bc.SwitchEndimonUI(ActiveAIEndimon2, ActiveAIEndimon2.GetActiveNumber());
 
                 //Waiting action to finish up then switching back
@@ -237,7 +237,7 @@ public class AI
             }
         }
 
-        //We will attack otherwise
+        //We will attack if we didn't swap
         else
         {
             //The AI only can choose between the 2 damage moves
@@ -245,7 +245,6 @@ public class AI
             if(rand > 5)
             {
                 //They will use move 1
-                Debug.Log("Used move one: " + AIEndimon.GetEndimonMove1().GetMoveName());
                 moveToUse = AIEndimon.GetEndimonMove1();
 
                 //Preparing to attack
@@ -253,25 +252,32 @@ public class AI
 
                 //Determine the target ahead of time for the textbox
                 rand = Random.Range(1, 11);
-                if (rand > 5 || GameProfile.CurrentCharacter.GetActiveEndimon2().GetCurrentHP() <= 0) {
-                    bc.BattleTextPanel.SetActive(true);
-                    bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, GameProfile.CurrentCharacter.GetActiveEndimon1());
+                //Check for confusion, if so, then apply the damage to itself
+                if (AIEndimon.GetEndimonNegativeEffect() == Endimon.StatusEffects.Confusion && Random.Range(1, 10) > 7)
+                {
+                    endimonToTarget = AIEndimon;
+                }
+                else if (rand > 5 || GameProfile.CurrentCharacter.GetActiveEndimon2().GetCurrentHP() <= 0)
+                {
+                    endimonToTarget = GameProfile.GetCurrentCharacter().GetActiveEndimon1();
                 }
                 else
                 {
-                    bc.BattleTextPanel.SetActive(true);
-                    bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, GameProfile.CurrentCharacter.GetActiveEndimon2());
+                    endimonToTarget = GameProfile.GetCurrentCharacter().GetActiveEndimon2();
                 }
+
+                //Insert text into textbox
+                bc.BattleTextPanel.SetActive(true);
+                bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, endimonToTarget);
                 yield return new WaitForSeconds(1.5f);
 
                 //Playing attack animation
                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(0));
-                bc.CastElementalEffect(moveToUse, AIEndimon);
+                bc.CastElementalEffectParticles(moveToUse, AIEndimon);
             }
+            //Using move 2 otherwise
             else
             {
-                //They will use move 2
-                Debug.Log("Used move two: " + AIEndimon.GetEndimonMove2().GetMoveName());
                 moveToUse = AIEndimon.GetEndimonMove2();
 
                 //Preparing to attack
@@ -279,35 +285,39 @@ public class AI
 
                 //Determine the target ahead of time for the textbox
                 rand = Random.Range(1, 11);
-                if (rand > 5 || GameProfile.CurrentCharacter.GetActiveEndimon2().GetCurrentHP() <= 0)
+                //Check for confusion, if so, then apply the damage to itself
+                if (AIEndimon.GetEndimonNegativeEffect() == Endimon.StatusEffects.Confusion && Random.Range(1, 10) > 7)
                 {
-                    bc.BattleTextPanel.SetActive(true);
-                    bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, GameProfile.CurrentCharacter.GetActiveEndimon1());
+                    endimonToTarget = AIEndimon;
+                }
+                else if (rand > 5 || GameProfile.CurrentCharacter.GetActiveEndimon2().GetCurrentHP() <= 0)
+                {
+                    endimonToTarget = GameProfile.GetCurrentCharacter().GetActiveEndimon1();
                 }
                 else
                 {
-                    bc.BattleTextPanel.SetActive(true);
-                    bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, GameProfile.CurrentCharacter.GetActiveEndimon2());
+                    endimonToTarget = GameProfile.GetCurrentCharacter().GetActiveEndimon2();
                 }
+
+                bc.BattleTextPanel.SetActive(true);
+                bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, moveToUse, endimonToTarget);
                 yield return new WaitForSeconds(1.5f);
 
                 //Playing attack animation
                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(1));
-                bc.CastElementalEffect(moveToUse, AIEndimon);
+                bc.CastElementalEffectParticles(moveToUse, AIEndimon);
             }
             
-            //AI chooses a target (Checks to see if there is one Endimon remaining just in case while deciding a target) 
+            //AI has picked a target, depending on who, attack that specific Endimon
+            //Attack first slotted Endimon in this case
             if(rand > 5 || GameProfile.CurrentCharacter.GetActiveEndimon2().GetCurrentHP() <= 0)
             {
-                //They will use the selected move on the opponent's first Endimon  
-                endimonToTarget = GameProfile.CurrentCharacter.GetActiveEndimon1();
-
                 //Switching camera angle
                 yield return new WaitForSeconds(.5f);
                 CameraController.SetGameStatus("Defending", endimonToTarget);
                 yield return new WaitForSeconds(.5f);
 
-                //Do the damage action
+                //Do the damage, update health, spawn text bubble, fire off animations, particles and audio for defending Endimon
                 int damage = AIEndimon.UseDamageMove(AIEndimon, moveToUse, endimonToTarget, GlobalStatuses, false);
                 bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, moveToUse, endimonToTarget, damage, bc.CheckShadowCastStatus());
                 AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
@@ -317,30 +327,27 @@ public class AI
                 bc.SetTempEndimon(endimonToTarget);
                 if(endimonToTarget.GetActiveNumber() == 0 || endimonToTarget.GetActiveNumber() == 1)
                 {
-                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, 5f);
+                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, 5f, 0);
                 }
                 else
                 {
-                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, -5f);
+                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, -5f, 0);
                 }
                 anims[endimonToTarget.GetActiveNumber()].Play(endimonToTarget.GetAnimationName(3));
-                Debug.Log("We used a damage move on the first target");
 
-                //Setting things back to normal
+                //Switch camera back to free state
                 yield return new WaitForSeconds(2f);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
             }
+            //We targeted the 2nd slotted Endimon instead
             else
             {
-                //They will use the selected move on the opponent's second Endimon
-                endimonToTarget = GameProfile.CurrentCharacter.GetActiveEndimon2();
-
                 //Switching camera angle
                 yield return new WaitForSeconds(.5f);
                 CameraController.SetGameStatus("Defending", endimonToTarget);
                 yield return new WaitForSeconds(.5f);
 
-                //Do the damage action
+                //Do the damage, update health, spawn text bubble, fire off animations, particles and audio for defending Endimon
                 int damage = AIEndimon.UseDamageMove(AIEndimon, moveToUse, endimonToTarget, GlobalStatuses, false);
                 bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, moveToUse, endimonToTarget, damage, bc.CheckShadowCastStatus());
                 AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
@@ -350,36 +357,38 @@ public class AI
                 bc.SetTempEndimon(endimonToTarget);
                 if (endimonToTarget.GetActiveNumber() == 0 || endimonToTarget.GetActiveNumber() == 1)
                 {
-                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, 5f);
+                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, 5f, 0);
                 }
                 else
                 {
-                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, -5f);
+                    bc.PlayParticleAtLocation(endimonToTarget, true, 5, 7f, -5f, 0);
                 }
                 anims[endimonToTarget.GetActiveNumber()].Play(endimonToTarget.GetAnimationName(3));
                 Debug.Log("We used a damage move on the second target");
 
-                //Setting things back to normal
+                //Switch camera back to free state
                 yield return new WaitForSeconds(2.5f);
                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
             }
         }
+        //End the turn for the AI
         bc.BattleTextPanel.SetActive(false);
         bc.UpdateHealthValues();
         bc.EndAITurn();
     }
 
-    //Trainer will take the persona of the Easy/Hard AI
+    //AI will take control of the Easy/Hard AI's script (50/50 chance)
     public IEnumerator DecidingActionMedium(BattleController bc, Endimon AIEndimon, Animator[] anims, Image[] GlobalStatuses)
     {
-        //Empty Function (This is handled via the Update method in BattleController)
+        //Empty Function (This is handled via the Update method in BattleController because of Coroutines)
         return null;
     }
 
+    //AI will use some intelligence in selecting a move for that turn, its goal is to target the highest impact Endimon in the most effective way
     public IEnumerator DecidingActionHard(BattleController bc, Endimon AIEndimon, Animator[] anims, Image[] GlobalStatuses)
     {
-        //AI first determines who is the threat on the field at the moment. It's goal is to take down the Endimon with the lowest ratio of HP/Attack
-        //The AI will solely target that Endimon first, this will be recalculated each turn in case of swap outs
+        //AI first determines who is the threat on the field at the moment. This is based off of Attack Damage and Health Ratio
+        //Obtain copy of all the Endimon necessary to make a decision
         Endimon P1E = GameProfile.GetCurrentCharacter().GetActiveEndimon1();
         Endimon P2E = GameProfile.GetCurrentCharacter().GetActiveEndimon2();
         Endimon AI1E = GameProfile.GetCurrentAI().GetEndimon(0);
@@ -388,9 +397,7 @@ public class AI
         Endimon AI4E = GameProfile.GetCurrentAI().GetEndimon(3);
 
 
-        //The AI will typically hone in on the target it finds the most dangerous, and attack it until its dead rather than do damage to both
-        //It must find the most dangerous opponent on the field and it will do this by measuring the lower HP vs the attack they do
-        //The AI mostly cares about getting rid of Endimon as fast as possible, and take into account the damage they can do
+        //Figure out who to prioritize
         int priority1 = 10000;
         int priority2 = 10000;
         if (P1E.GetCurrentHP() > 0) {
@@ -400,24 +407,22 @@ public class AI
             priority2 = P2E.GetCurrentHP() - P2E.GetAttack();
         }
 
-        //Smallest value gets target
+        //Smallest value becomes the target
         if (priority1 < priority2)
         {
             Target = P1E;
-            Debug.Log("Target: " + P1E.GetName() + " Previous: " + LastTarget);
         }
         else
         {
             Target = P2E;
-            Debug.Log("Target: " + P2E.GetName() + " Previous: " + LastTarget);
         }
 
-        //We will first precalculate the damage move, if this kills this is the move we take
+        //We will first precalculate the damage moves, if any of these kills the target this is what the Endimon will do this turn
         bc.BattleTextPanel.SetActive(true);
-        Move KillingMove = CanKillTarget(AIEndimon, Target, GlobalStatuses);
+        Move KillingMove = CanKillTarget(AIEndimon, Target, GlobalStatuses);    //Returns if a move can kill
         if (KillingMove != null || AIEndimon.GetEndimonPostiveEffect() != Endimon.StatusEffects.Nothing)
         {
-            //If we have a positive effect on, we still need to choose a move
+            //If a move could kill, figure out which one it is and then use it
             if(KillingMove == null)
             {
                 int move1Dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, true);
@@ -433,27 +438,43 @@ public class AI
             }
             //Preparing move
             CameraController.SetGameStatus("Attacking", AIEndimon);
+
+            //Check for confusion status, Endimon should hit itself if it rolls the chance
+            Endimon tempTarget = null;
+            int rand = 0;
+            if (AIEndimon.GetEndimonNegativeEffect() == Endimon.StatusEffects.Confusion)
+            {
+                //Roll a chance to see if Endimon will hit itself (30%)
+                rand = Random.Range(1, 10);
+                if (rand > 7)
+                {
+                    tempTarget = Target;    //Want to save the real target but for this turn it hit itself
+                    Target = AIEndimon;
+                }
+            }
+
+            //Display in textbox
             bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, KillingMove, Target);
             yield return new WaitForSeconds(1.5f);
 
-            //Doing the actions to show a cast
+            //Play the correct animation and particle effect
             if(KillingMove.GetMoveName() == AIEndimon.GetEndimonMove1().GetMoveName())
             {
-                bc.CastElementalEffect(AIEndimon.GetEndimonMove1(), AIEndimon);
+                bc.CastElementalEffectParticles(AIEndimon.GetEndimonMove1(), AIEndimon);
                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(0));
             }
             else
             {
-                bc.CastElementalEffect(AIEndimon.GetEndimonMove2(), AIEndimon);
+                bc.CastElementalEffectParticles(AIEndimon.GetEndimonMove2(), AIEndimon);
                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(1));
             }
 
-            //Switching camera angle
+            //Switching camera angle to defender
             yield return new WaitForSeconds(.5f);
             CameraController.SetGameStatus("Defending", Target);
             yield return new WaitForSeconds(.5f);
 
-            //Applying the damage 
+            //Applying the damage, spawn the text bubble, update health, play audio, particle and animations on defending Endimon 
             int dmg = AIEndimon.UseDamageMove(AIEndimon, KillingMove, Target, GlobalStatuses, false);
             bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, KillingMove, Target, dmg, bc.CheckShadowCastStatus());
             bc.SpawnText(KillingMove.GetMoveType().ToString(), dmg, Target);
@@ -461,27 +482,38 @@ public class AI
             bc.UpdateHealthValues();
             bc.SetTempEndimon(Target);
             AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
-            bc.PlayParticleAtLocation(Target, true, 5, 7f, 5f);
+            bc.PlayParticleAtLocation(Target, true, 5, 7f, 5f, 0);
             anims[Target.GetActiveNumber()].Play(Target.GetAnimationName(3));
 
-            //Setting things back to normal
+            
             yield return new WaitForSeconds(2f);
+
+            //Reset the primary target if confusion was applied
+            if (tempTarget != null)
+            {
+                Target = tempTarget;
+            }
+
+            //Setting camera back to free mode
             CameraController.SetGameStatus("PlayerAwaitTurn", null);
         }
         
+        //We determined that there is no killing move, we will now analyze if we should switch Endimon
+        //We only check this if the Target has recently changed to prevent wasting turns
         else { 
-            //As long as we can swap, once we switch to a new target we should consider switching in something to counter or protect a weakness
+            //Should we swap? Check to see if we actually can, and if it would be wise based upon subbing out a weak Endimon or putting in a stronger one
             if ((CanAISwap() && Target.GetName() != LastTarget) && ((IsEndimonAlive(ActiveAIEndimon1) && ActiveAIEndimon1.GetEndimonWeakness() == Target.GetEndimonType())
                 || (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonWeakness() == Target.GetEndimonType()) || FindStrongerEndimon(Target))) {
 
-                //Figure out who to swap, first check if first slotted Endimon is weak to Target
+                //Figure out who to swap, first check if first slotted Endimon is weak to the target
                 if (IsEndimonAlive(ActiveAIEndimon1) && ActiveAIEndimon1.GetEndimonWeakness() == Target.GetEndimonType())
                 {
-                    //Preparing swap
+                    //Prep camera and text
                     CameraController.SetGameStatus("Attacking", ActiveAIEndimon1);
                     bc.BattleText.text = BattleTextController.SwappingText(ActiveAIEndimon1, GetNonWeakEndimon(ActiveAIEndimon1.GetEndimonWeakness()));
                     yield return new WaitForSeconds(1.5f);
 
+                    //Do the swapping of models and update the UI
                     SwapEndimonOnTurn(1, GetNonWeakEndimon(ActiveAIEndimon1.GetEndimonWeakness()));
                     bc.SwitchEndimonUI(ActiveAIEndimon1, ActiveAIEndimon1.GetActiveNumber());
 
@@ -490,116 +522,148 @@ public class AI
                     CameraController.SetGameStatus("PlayerAwaitTurn", null);
                 }
 
-                //The second slotted Endimon is weak to the target, we will swap with a different Endimon
+                //The second slotted Endimon is weak to the target, swap it out
                 else if (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonWeakness() == Target.GetEndimonType())
                 {
-                    //Preparing swap
+                    //Prep camera and text
                     CameraController.SetGameStatus("Attacking", ActiveAIEndimon2);
                     bc.BattleText.text = BattleTextController.SwappingText(ActiveAIEndimon2, GetNonWeakEndimon(ActiveAIEndimon2.GetEndimonWeakness()));
                     yield return new WaitForSeconds(1.5f);
 
+                    //Do the swapping of models and update the UI
                     SwapEndimonOnTurn(2, GetNonWeakEndimon(ActiveAIEndimon2.GetEndimonWeakness()));
                     bc.SwitchEndimonUI(ActiveAIEndimon2, ActiveAIEndimon2.GetActiveNumber());
 
-                    //Waiting action to finish up then switching back
+                    //Waiting for action to finish up then switching camera back
                     yield return new WaitForSeconds(1f);
                     CameraController.SetGameStatus("PlayerAwaitTurn", null);
                 }
-                //We've determined an Endimon in reserve would be better on the field (Swap it in for one that isn't the same type)
+
+                //Otherwise, check to see if there is a stronger Endimon in reserve
                 else if (FindStrongerEndimon(Target))
                 {
-                    //Look to swap the opposite Endimon's turn
+                    //Let's swap the opposite turn Endimon so they're turn comes up faster
                     if(IsEndimonAlive(ActiveAIEndimon1) && ActiveAIEndimon1 == AIEndimon)
                     {
-                        //Preparing swap
+                        //Prep camera and text
                         CameraController.SetGameStatus("Attacking", ActiveAIEndimon2);
                         bc.BattleText.text = BattleTextController.SwappingText(ActiveAIEndimon2, GetStrongerEndimon(Target));
                         yield return new WaitForSeconds(1.5f);
 
+                        //Make the swap of models and UI
                         SwapEndimonOnTurn(2, GetStrongerEndimon(Target));
                         bc.SwitchEndimonUI(ActiveAIEndimon2, ActiveAIEndimon2.GetActiveNumber());
 
-                        //Waiting action to finish up then switching back
+                        //Waiting for action to finish up then switching camera back
                         yield return new WaitForSeconds(1f);
                         CameraController.SetGameStatus("PlayerAwaitTurn", null);
                     }   
+                    //Otherwise let's swap the 2nd Endimon out
                     else
                     {
-                        //Preparing swap
+                        //Prep camera and text
                         CameraController.SetGameStatus("Attacking", ActiveAIEndimon1);
                         bc.BattleText.text = BattleTextController.SwappingText(ActiveAIEndimon1, GetStrongerEndimon(Target));
                         yield return new WaitForSeconds(1.5f);
 
+                        //Make the swap of models and UI
                         SwapEndimonOnTurn(1, GetStrongerEndimon(Target));
                         bc.SwitchEndimonUI(ActiveAIEndimon1, ActiveAIEndimon1.GetActiveNumber());
 
-                        //Waiting action to finish up then switching back
+                        //Waiting for action to finish up then switching camera back
                         yield return new WaitForSeconds(1f);
                         CameraController.SetGameStatus("PlayerAwaitTurn", null);
                     }
                 }
             }
+
+            //We figured out we don't want to swap, we will now choose b/w attacking, using a special ability, and using an item
+            //Typically, we want more attacking and to use abilities/items sparingly when appropriate
             else
             {
-                //If we should not swap, let's decide between an item/ability/attack
-                //Higher chance to attack, utilize other abilities/items sparingly
                 while (true)
                 {
                     int rand = Random.Range(1, 6);
-                    //We will attack
+
+                    //We will attack 60% of the time
                     if (rand < 4 || HasEffectiveMove(AIEndimon, Target))
                     {
                         int move1Dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, true);
                         int move2Dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove2(), Target, GlobalStatuses, true);
                         int dmg = 0;
 
-                        //Preparing move
+                        //Prep cameera
                         CameraController.SetGameStatus("Attacking", AIEndimon);
+
+                        //Check for confusion status, Endimon should hit itself if chance is rolled
+                        Endimon tempTarget = null;
+                        if(AIEndimon.GetEndimonNegativeEffect() == Endimon.StatusEffects.Confusion)
+                        {
+                            //Roll a chance to see if Endimon will hit itself (30%)
+                            rand = 0;
+                            rand = Random.Range(1, 10);
+                            if(rand > 7)
+                            {
+                                tempTarget = Target;    //Want to save the real target but for this turn it hit itself
+                                Target = AIEndimon;
+                            }
+                        }
+
                         Move UsedMove = null;
+                        //Determine the better move, display the textbox, and apply the animations and particles for an attack
                         if (move1Dmg > move2Dmg)
                         {
-                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, true);
+                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove1(), Target, GlobalStatuses, false);
                             bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, AIEndimon.GetEndimonMove1(), Target);
                             yield return new WaitForSeconds(1.5f);
-                            bc.CastElementalEffect(AIEndimon.GetEndimonMove1(), AIEndimon);
+                            bc.CastElementalEffectParticles(AIEndimon.GetEndimonMove1(), AIEndimon);
                             anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(0));
                             UsedMove = AIEndimon.GetEndimonMove1();
                         }
                         else
                         {
-                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove2(), Target, GlobalStatuses, true);
+                            dmg = AIEndimon.UseDamageMove(AIEndimon, AIEndimon.GetEndimonMove2(), Target, GlobalStatuses, false);
                             bc.BattleText.text = BattleTextController.AttackDamageText(AIEndimon, AIEndimon.GetEndimonMove2(), Target);
                             yield return new WaitForSeconds(1.5f);
-                            bc.CastElementalEffect(AIEndimon.GetEndimonMove2(), AIEndimon);
+                            bc.CastElementalEffectParticles(AIEndimon.GetEndimonMove2(), AIEndimon);
                             anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(1));
                             UsedMove = AIEndimon.GetEndimonMove2();
                         }
 
-                        //Switching camera angle
+                        //Switching camera angle to the defender
                         yield return new WaitForSeconds(.5f);
                         CameraController.SetGameStatus("Defending", Target);
                         yield return new WaitForSeconds(.5f);
 
-                        dmg = AIEndimon.UseDamageMove(AIEndimon, UsedMove, Target, GlobalStatuses, false);
+                        //Apply the damage, spawn the correct particles, and display the animations and audio accordingly
                         bc.SpawnText(UsedMove.GetMoveType().ToString(), dmg, Target);
-                        Target.TakeDamage(dmg);
-                        bc.UpdateHealthValues();
                         bc.BattleText.text = BattleTextController.DefendDamageText(AIEndimon, AIEndimon.GetEndimonMove1(), Target, dmg, bc.CheckShadowCastStatus());
                         AudioSource.PlayClipAtPoint(Audio.BeenHit, GameObject.Find("MainCamera").transform.position);
-                        bc.PlayParticleAtLocation(Target, true, 5, 7f, 5f);
+                        bc.PlayParticleAtLocation(Target, true, 5, 7f, 5f, 0);
                         anims[Target.GetActiveNumber()].Play(Target.GetAnimationName(3));
+                        Target.TakeDamage(dmg);
+                        bc.UpdateHealthValues();
                         Debug.Log("Hard AI: Used a damaging move ");
 
+                        //Reset the primary target because it was moved for confusion
+                        if(tempTarget != null)
+                        {
+                            Target = tempTarget;
+                        }
                         //Waiting action to finish up then switching back
                         yield return new WaitForSeconds(2f);
+                        
                         CameraController.SetGameStatus("PlayerAwaitTurn", null);
                         break;
                     }
+
+                    //Using an item (20% chance)
                     else if (rand == 4 && HaveAnyItems())
                     {
                         rand = Random.Range(0, AIItems.Length);
 
                         int temp = 0;   //Looks to see if we couldn't find a usable item
+
                         //Take any item unless it is healing and both Endimon are full health
                         while(AIItems[rand] == null || NeedsHealing(AIItems[rand]))
                         {
@@ -610,13 +674,16 @@ public class AI
                                 break;
                             }
                         }
+
+                        //If we chose an item then we will use it
                         if(temp < 10) { 
                             //If the positive effect can be used on either of the Endimon, then place it
                             if (AIItems[rand].GetUsabilityTeam() && ((IsEndimonAlive(ActiveAIEndimon1) && ActiveAIEndimon1.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing)
                                 || (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing))) {
 
-                                //Preparing move
+                                //Prep the camera
                                 CameraController.SetGameStatus("Attacking", AIEndimon);
+
                                 //Determine who the presumed target will be for the textbox
                                 if(IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing)
                                 {
@@ -626,83 +693,95 @@ public class AI
                                 {
                                     bc.BattleText.text = BattleTextController.ItemUsedText(AIEndimon, AIItems[rand], ActiveAIEndimon1);
                                 }
-                                yield return new WaitForSeconds(1.5f);
 
-                                bc.PlayParticleAtLocation(AIEndimon, false, 0, 1f, -2.5f);
+                                //Play particle/audio on Endimon using the item
+                                yield return new WaitForSeconds(1.5f);
+                                bc.PlayParticleAtLocation(AIEndimon, false, 0, 2f, -3f, 0);
                                 AudioSource.PlayClipAtPoint(Audio.UseItem, GameObject.Find("MainCamera").transform.position);
                                 yield return new WaitForSeconds(1f);
 
+                                //Determine if the first Endimon should recieve the item (Based on health and if its alive)
                                 if ((IsEndimonAlive(ActiveAIEndimon1) && AIItems[rand].GetHealing() && ActiveAIEndimon1.GetCurrentHP() != ActiveAIEndimon1.GetHealth()) 
                                     || (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing))
                                 {
-                                    //Switching camera angle
+                                    //Switching camera angle to defender
                                     yield return new WaitForSeconds(.5f);
                                     CameraController.SetGameStatus("Defending", ActiveAIEndimon2);
                                     yield return new WaitForSeconds(.5f);
                                
+                                    //Use the item on the Endimon, removing it from the list and applying the particle effects & status
                                     Item UsedItem = AddTurnToItem(ActiveAIEndimon2, AIItems[rand], AIEndimon);
                                     int particleIndex = bc.FindLocationForItemParticle(AIEndimon, ActiveAIEndimon2, UsedItem);
                                     UseItem(AIItems[rand], ActiveAIEndimon2, bc);
                                     RemoveItem(AIItems[rand]);
-                                    bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex);
+                                    bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex, false);
 
-                                    //Waiting action to finish up then switching back
+                                    //Waiting action to finish up then switching camera back
                                     yield return new WaitForSeconds(2.5f);
                                     CameraController.SetGameStatus("PlayerAwaitTurn", null);
                                 }
+
+                                //The second Endimon was picked to recieve the item
                                 else
                                 {
-                                    //Switching camera angle
+                                    //Switching camera angle to defender
                                     yield return new WaitForSeconds(.5f);
                                     CameraController.SetGameStatus("Defending", ActiveAIEndimon1);
                                     yield return new WaitForSeconds(.5f);
 
+                                    //Use the item on the Endimon, removing it from the list and applying the particle effects & status
                                     Item UsedItem = AddTurnToItem(ActiveAIEndimon1, AIItems[rand], AIEndimon);
                                     int particleIndex = bc.FindLocationForItemParticle(AIEndimon, ActiveAIEndimon1, UsedItem);
                                     UseItem(AIItems[rand], ActiveAIEndimon1, bc);
                                     RemoveItem(AIItems[rand]);
-                                    bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex);
+                                    bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex, false);
 
                                     //Waiting action to finish up then switching back
                                     yield return new WaitForSeconds(2.5f);
                                     CameraController.SetGameStatus("PlayerAwaitTurn", null);
                                 }
                             }
+
                             //If its a negative effect item and the targetted endimon has no debuff then place it
                             else if(!AIItems[rand].GetUsabilityTeam() && Target.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing)
                             {
-                                //Preparing move
+                                //Prep camera and text
                                 CameraController.SetGameStatus("Attacking", AIEndimon);
                                 bc.BattleText.text = BattleTextController.ItemUsedText(AIEndimon, AIItems[rand], Target);
                                 yield return new WaitForSeconds(1.5f);
 
-                                bc.PlayParticleAtLocation(AIEndimon, false, 0, 1f, -2.5f);
+                                //Play particles/audio on the Endimon using the item
+                                bc.PlayParticleAtLocation(AIEndimon, false, 0, 2f, -3f, 0);
                                 AudioSource.PlayClipAtPoint(Audio.UseItem, GameObject.Find("MainCamera").transform.position);
                                 yield return new WaitForSeconds(1f);
 
-                                //Switching camera angle
+                                //Switching camera angle to defender
                                 yield return new WaitForSeconds(.5f);
                                 CameraController.SetGameStatus("Defending", Target);
                                 yield return new WaitForSeconds(.5f);
 
+                                //Use the item on the Endimon, removing it from the list and applying the particle effects & status
                                 Item UsedItem = AddTurnToItem(Target, AIItems[rand], AIEndimon);
-
                                 UseItem(UsedItem, Target, bc);
                                 RemoveItem(AIItems[rand]);
                                 int particleIndex = bc.FindLocationForItemParticle(AIEndimon, Target, UsedItem);
-                                bc.UpdateStatusEffectBoxes(Target, particleIndex);
-                                //Waiting action to finish up then switching back
+                                bc.UpdateStatusEffectBoxes(Target, particleIndex, true);
+
+                                //Waiting action to finish up then switching camera back
                                 yield return new WaitForSeconds(2.5f);
                                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
                             }
                             break;
                         }
                     }
+
+                    //Using the special ability (20% chance)
                     else if(rand == 5)
                     {
+                        //Check to see if this is a global move, if so cast it
                         if(!AIEndimon.GetEndimonMove3().GetHarmful() && !AIEndimon.GetEndimonMove3().GetTargetable() && CheckGlobals(AIEndimon.GetEndimonMove3(), GlobalStatuses))
                         {
-                            //Preparing for move
+                            //Prep camera and text
                             CameraController.SetGameStatus("Attacking", AIEndimon);
                             bc.BattleText.text = BattleTextController.SpecialAbilityText(AIEndimon, AIEndimon.GetEndimonMove3(), null);
                             yield return new WaitForSeconds(1.5f);
@@ -713,90 +792,98 @@ public class AI
                             CameraController.SetGameStatus("Globals", null);
                             bc.BattleText.text = BattleTextController.GlobalText(AIEndimon.GetEndimonMove3().GetMoveName());
 
-                            //Global effect can be used here
+                            //Cast global effect particles
                             int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, null, AIEndimon.GetEndimonMove3(), bc);
                             bc.AddGlobalEffect(particleIndex);
-                            bc.UpdateStatusEffectBoxes(AIEndimon, particleIndex);
 
+                            //Return camera to free mode
                             yield return new WaitForSeconds(3f);
                             CameraController.SetGameStatus("PlayerAwaitTurn", null);
                             break;
                         }
+
+                        //If this is a negative effect move, we will use it on the target
                         else if(AIEndimon.GetEndimonMove3().GetHarmful() && Target.GetEndimonNegativeEffect() == Endimon.StatusEffects.Nothing)
                         {
-                            Debug.Log("AI: Using Harmful Special Ability");
-                            //Preparing move
+
+                            //Prep camera and text
                             CameraController.SetGameStatus("Attacking", AIEndimon);
                             bc.BattleText.text = BattleTextController.SpecialAbilityText(AIEndimon, AIEndimon.GetEndimonMove3(), Target);
                             yield return new WaitForSeconds(1.5f);
 
+                            //Play the animation
                             anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(2));
 
-                            //Switching camera angle
+                            //Switching camera angle to defender
                             yield return new WaitForSeconds(.5f);
                             CameraController.SetGameStatus("Defending", Target);
                             yield return new WaitForSeconds(.5f);
 
-                            //Hit target with a harmful effect
+                            //Hit target with a harmful effect (if -1 don't do anything)
                             int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, Target, AIEndimon.GetEndimonMove3(), bc);
                             if (particleIndex == -1)
                             {
                                 bc.BattleText.text = "The attack failed";
                             }
                             bc.CastAbilityEffect(particleIndex, Target, AIEndimon);
-                            bc.UpdateStatusEffectBoxes(Target, particleIndex);
+                            bc.UpdateStatusEffectBoxes(Target, particleIndex, true);
 
-                            //Waiting action to finish up then switching back
+                            //Waiting action to finish up then switching camera back
                             yield return new WaitForSeconds(1.5f);
                             CameraController.SetGameStatus("PlayerAwaitTurn", null);
                             break;
 
                         }
+
+                        //Otherwise, we know the move is going to be a positive effect
                         else if(!AIEndimon.GetEndimonMove3().GetHarmful() && ((IsEndimonAlive(ActiveAIEndimon1) && ActiveAIEndimon1.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing) || (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing))) {
 
+                            //If we should use this specific positive effect on the first slotted Endimon
                             if (IsEndimonAlive(ActiveAIEndimon2) && ActiveAIEndimon2.GetEndimonPostiveEffect() == Endimon.StatusEffects.Nothing)
                             {
-                                //Preparing move
+                                //Prep camera and text
                                 CameraController.SetGameStatus("Attacking", AIEndimon);
                                 bc.BattleText.text = BattleTextController.SpecialAbilityText(AIEndimon, AIEndimon.GetEndimonMove3(), ActiveAIEndimon2);
                                 yield return new WaitForSeconds(1.5f);
 
+                                //Play animation
                                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(2));
 
-                                //Switching camera angle
+                                //Switching camera angle to defneder
                                 yield return new WaitForSeconds(.5f);
                                 CameraController.SetGameStatus("Defending", ActiveAIEndimon2);
                                 yield return new WaitForSeconds(.5f);
 
-                                //Place it on AI2
+                                //Place it on AI2 Endimon
                                 int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, ActiveAIEndimon2, AIEndimon.GetEndimonMove3(), bc);
                                 bc.CastAbilityEffect(particleIndex, ActiveAIEndimon2, AIEndimon);
-                                bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex);
+                                bc.UpdateStatusEffectBoxes(ActiveAIEndimon2, particleIndex, false);
 
-                                //Waiting action to finish up then switching back
+                                //Waiting action to finish up then switching camera back
                                 yield return new WaitForSeconds(1.5f);
                                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
                             }
                             else
                             {
-                                //Preparing move
+                                //Prep camera and move
                                 CameraController.SetGameStatus("Attacking", AIEndimon);
                                 bc.BattleText.text = BattleTextController.SpecialAbilityText(AIEndimon, AIEndimon.GetEndimonMove3(), ActiveAIEndimon1);
                                 yield return new WaitForSeconds(1.5f);
 
+                                //Play animation
                                 anims[AIEndimon.GetActiveNumber()].Play(AIEndimon.GetAnimationName(2));
 
-                                //Switching camera angle
+                                //Switching camera angle to defender
                                 yield return new WaitForSeconds(.5f);
                                 CameraController.SetGameStatus("Defending", ActiveAIEndimon1);
                                 yield return new WaitForSeconds(.5f);
 
-                                //Place it on itself
+                                //Place it on AI1 Endimon
                                 int particleIndex = AIEndimon.UseSpecialMove(AIEndimon, ActiveAIEndimon1, AIEndimon.GetEndimonMove3(), bc);
                                 bc.CastAbilityEffect(particleIndex, ActiveAIEndimon1, AIEndimon);
-                                bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex);
+                                bc.UpdateStatusEffectBoxes(ActiveAIEndimon1, particleIndex, false);
 
-                                //Waiting action to finish up then switching back
+                                //Waiting action to finish up then switching camera back
                                 yield return new WaitForSeconds(1.5f);
                                 CameraController.SetGameStatus("PlayerAwaitTurn", null);
                             }
@@ -806,6 +893,7 @@ public class AI
                 }
             }
         }
+        //Assign the target we just hit and end the turn
         LastTarget = Target.GetName();
         bc.BattleTextPanel.SetActive(false);
         bc.UpdateHealthValues();
@@ -832,10 +920,11 @@ public class AI
     }
 
     //Will change an active endimon to one that is alive (function called when a death occurs)
-    //Return value will tell the program which active Endimon it'll need to update, 0 for if there is none
+    //Return value will tell the program which active Endimon it'll need to update, 1 or 2, 0 for if there is none
     public int SwapEndimonOnDeath(Endimon e)
     {
         Endimon NewEndimon = null;
+        //Look for a new Endimon
         for (int i = 0; i < 4; i++)
         {
             if (AITeam[i] != ActiveAIEndimon1 && AITeam[i] != ActiveAIEndimon2 && IsEndimonAlive(AITeam[i]))
@@ -857,11 +946,9 @@ public class AI
         {
             if(ActiveAIEndimon1.GetEndimonTurnTaken() == true)
             {
-                Debug.Log("We determined that this Endimon did already go that we replacing");
                 NewEndimon.SetTurnStatus(true);
             }
             NewEndimon.SetActiveNumber(ActiveAIEndimon1.GetActiveNumber());
-            Debug.Log("The Endimon being placed in is in box: " + NewEndimon.GetActiveNumber());
             ActiveAIEndimon1 = NewEndimon;
             return 1;
         }
@@ -869,11 +956,9 @@ public class AI
         {
             if (ActiveAIEndimon2.GetEndimonTurnTaken() == true)
             {
-                Debug.Log("We determined that this Endimon did already go that we replacing");
                 NewEndimon.SetTurnStatus(true);
             }
             NewEndimon.SetActiveNumber(ActiveAIEndimon2.GetActiveNumber());
-            Debug.Log("The Endimon being placed in is in box: " + NewEndimon.GetActiveNumber());
             ActiveAIEndimon2 = NewEndimon;
             return 2;
         }
@@ -883,8 +968,10 @@ public class AI
     //Slot is necessary to indicate which component needs to change in the battle screen
     public void SwapEndimonOnTurn(int slot, Endimon e)
     {
+        //First slotted Endimon is changing
         if (slot == 1)
         {
+            //Verify if this Endimon has already gone in the round
             if (ActiveAIEndimon1.GetEndimonTurnTaken() == true)
             {
                 e.SetTurnStatus(true);
@@ -893,11 +980,15 @@ public class AI
             {
                 e.SetTurnStatus(false);
             }
+            //Transfer over the active number
+            ActiveAIEndimon1.SetTurnStatus(false);
             ActiveAIEndimon1 = e;
             ActiveAIEndimon1.SetActiveNumber(2);
         }
+        //Second slottd Endimon is changing
         else if (slot == 2)
         {
+            //Verify if this Endimon has already gone in the round
             if (ActiveAIEndimon2.GetEndimonTurnTaken() == true)
             {
                 e.SetTurnStatus(true);
@@ -906,6 +997,8 @@ public class AI
             {
                 e.SetTurnStatus(false);
             }
+            //Transfer over the active number
+            ActiveAIEndimon2.SetTurnStatus(false);
             ActiveAIEndimon2 = e;
             ActiveAIEndimon2.SetActiveNumber(3);
         }
@@ -925,7 +1018,7 @@ public class AI
         return false;
     }
 
-    //Returns an Endimon of this type (Used to find a stronger Endimon)
+    //Returns an Endimon that is weak to the Endimon's type that is passed in
     public Endimon GetStrongerEndimon(Endimon e)
     {
         for(int i = 0; i < AITeam.Length; i++)
@@ -999,7 +1092,7 @@ public class AI
         return false;
     }
 
-    //Function that is called to determine if the AI has any Endimon left alive in their party
+    //Function that is called to determine if the AI has any Endimon left alive in their party (game over?)
     public bool IsTeamAlive()
     {
         for (int i = 0; i < 4; i++)
@@ -1095,17 +1188,17 @@ public class AI
     //Function casts the effect of an item
     public void UseItem(Item UsedItem, Endimon TargettedEndimon, BattleController bc)
     {
-        //Non-instant effect item
+        //Non-instant effect item (Apply the particles, play audio, add status)
         if (UsedItem.GetItemDuration() > 0)
         {
             AudioClip itemClip = Item.DetermineAudioClip(UsedItem.GetItemName());
             AudioSource.PlayClipAtPoint(itemClip, GameObject.Find("MainCamera").transform.position);
-            Debug.Log("Endimon: " + TargettedEndimon.GetName() + " hit by " + UsedItem.GetItemName() + " for " + +UsedItem.GetItemDuration() + " turns");
             TargettedEndimon.AddStatusEffect(!UsedItem.GetUsabilityTeam(), UsedItem.GetEffect(), UsedItem.GetItemDuration());
         }
-        //Otherwise this is an instant effect so put those here
+        //Otherwise this is an instant effect so we won't be placing permanent particles
         else
         {
+            //Small heal, give back 25% of HP
             if (UsedItem.GetEffect() == Endimon.StatusEffects.HealthRestore)
             {
                 //We will hurt the target with negative damage to heal
@@ -1119,6 +1212,7 @@ public class AI
                 bc.SpawnText("Healing", HealthToRestore*-1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
             }
+            //Large heal, give back 50% of HP, remove 15 defense
             else if (UsedItem.GetEffect() == Endimon.StatusEffects.LargeHealthRestore)
             {
                 //We will hurt the target with negative damage to heal
@@ -1138,7 +1232,6 @@ public class AI
     //SETTERS
     public void SetAITeam(Endimon[] theTeam) { AITeam = theTeam; }
     public void SetAIItems(Item[] theItems) { AIItems = theItems; }
-    public void SetAIName(string theName) { AIName = theName; }
     public void SetAIDifficulty(CharacterSelectController.DifficultySelection difficulty) { AIDifficulty = difficulty; }
     public void SetActiveEndimon1(int index) { ActiveAIEndimon1 = AITeam[index]; }
     public void SetActiveEndimon2(int index) { ActiveAIEndimon2 = AITeam[index]; }
@@ -1148,7 +1241,6 @@ public class AI
     //GETTERS
     public Endimon[] GetAITeam() { return AITeam; }
     public Item[] GetAIItems() { return AIItems; }
-    public string GetAIName() { return AIName; }
     public CharacterSelectController.DifficultySelection GetAIDifficulty() { return AIDifficulty; }
     public Endimon GetEndimon(int index) { return AITeam[index]; }
     public Endimon GetActiveEndimon1() { return ActiveAIEndimon1; }

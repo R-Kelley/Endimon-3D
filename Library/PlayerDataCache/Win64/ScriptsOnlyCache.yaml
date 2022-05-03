@@ -1242,5 +1242,5 @@ ScriptsOnlyBuild:
   - Assets/Scenes/CampaignMap.unity
   - Assets/Scenes/ItemSelection.unity
   - Assets/Scenes/Battleground.unity
-  playerPath: C:/Users/rarak/OneDrive/Desktop/College/Thesis/Endimon 3D Build/Endimon
-    3D.exe
+  playerPath: C:/Users/rarak/OneDrive/Desktop/College/Thesis/Final Work/Endimon 3D
+    Build/Endimon 3D.exe

@@ -1,5 +1,7 @@
 
-public class BattleTextController {
+//Is a static class handles all text generation for the textbox in the game
+//Call anywhere to get a string of text back based upon the action happening in the game
+public static class BattleTextController {
 
     //Used when looking at the attacker about to deal damage
     public static string AttackDamageText(Endimon Attacker, Move DamageMove, Endimon Defender)
@@ -80,7 +82,7 @@ public class BattleTextController {
         return tempString;
     }
 
-    //Used when an Endimonn casts any item
+    //Used when an Endimonn uses an item
     public static string ItemUsedText(Endimon Attacker, Item UsedItem, Endimon Defender)
     {
         string tempString = "";
@@ -129,7 +131,7 @@ public class BattleTextController {
         return tempString;
     }
 
-    //Used when an Endimon casts an ability
+    //Used when an Endimon casts a special ability
     public static string SpecialAbilityText(Endimon Attacker, SpecialMove SpecialMove, Endimon Defender)
     {
         string tempString = "";
@@ -142,8 +144,11 @@ public class BattleTextController {
             tempString += "(AI): ";
         }
 
+        //As long as its not a global move, it must target someone
         if (SpecialMove.GetMoveName() != "Blizzard" && SpecialMove.GetMoveName() != "Ring of Fire" && SpecialMove.GetMoveName() != "Shadowcast")
-        tempString += Attacker.GetName() + " used " + SpecialMove.GetMoveName() + " on " + Defender.GetName() + ".";
+        {
+            tempString += Attacker.GetName() + " used " + SpecialMove.GetMoveName() + " on " + Defender.GetName() + ".";
+        }
 
         if(SpecialMove.GetMoveName() == "Rejuvenation")
         {

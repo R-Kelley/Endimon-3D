@@ -21,10 +21,11 @@ public class Endimon
     private Move EndimonMove2;                      //The second damage move the Endimon has
     private SpecialMove EndimonMove3;               //Special move the Endimon has
     private bool EndimonTurnTaken;                  //Determine if Endimon has gone during a round of turns
+    private bool EndimonDead;                       //Tells you if an Endimon is dead (Both 0 HP and this method help determine this)
     public enum StatusEffects {AttackUp, DefenseUp, HealthRestore, LargeHealthRestore, Paralyze, Poison, Sleep, Confusion, IcicleBaracade, Screech, Synthesis, HeatUp, Speedray, Nothing }//Status effect names that can be applied to a given Endimon through Items/Special Abilities
     private StatusEffects[] Statuses;               //Current status effects being suffered
     private int[] StatusTurns;                      //Remaining turns on both status effects
-    private string[] EndimonAnimationNames;
+    private string[] EndimonAnimationNames;         //Array of animations an Endimon carries
 
     //Tracks which Endimon it is on the field for the UI Components & Animations
     //0 & 1 and Player's first and second on the field while 2 and 3 are the AI's
@@ -70,7 +71,7 @@ public class Endimon
         //Stats for upcoming battle are set
         EndimonCurrentHealth = hp;
         EndimonTurnTaken = false;
-        ActiveNumber = -1;
+        ActiveNumber = -1;                  //Modified at start of battle
         Statuses = new StatusEffects[2];    //One harming effect, one helpful
         StatusTurns = new int[2];           //Turns for each effect
         Statuses[0] = StatusEffects.Nothing;
@@ -211,21 +212,10 @@ public class Endimon
     }
 
     //Function will calculate the damage of the move, then return the correct damage
-    //This function does not handle the animations or timing sequence as of yet
+    //Using a calculate mode will find the damage assuming the move doesn't get blocked in some way
     public int UseDamageMove(Endimon Attacker, Move DamageMove, Endimon Defender, Image[] GlobalStatuses, bool justCalculate)
     {
         float TotalDamage = 0f;
-
-        //Confusion status will make Endimon hit themselves with their own attack 70% of the time
-        if(Statuses[1] == StatusEffects.Confusion && !justCalculate)
-        {
-            int rand = Random.Range(1, 11);
-            if(rand > 3)
-            {
-                Debug.Log("CONFUSED!");
-                Defender = Attacker;
-            }
-        }
 
         //This move will do no damage as the Endimon is paralyzed and cannot attack using non-normal type moves
         if(Statuses[1] == StatusEffects.Paralyze && DamageMove.GetMoveType() != Endimontypes.Normal)
@@ -237,7 +227,6 @@ public class Endimon
         Sprite shadowGlobal = Resources.Load("StatusIcons/ShadowGlobal", typeof(Sprite)) as Sprite;
         if ((GlobalStatuses[8].sprite == shadowGlobal|| GlobalStatuses[9].sprite == shadowGlobal) && DamageMove.GetMoveType() != Endimontypes.Shadow && !justCalculate)
         {
-            Debug.Log("Move could be 0 by shadow global");
             int rand = Random.Range(1, 11);
             if(rand < 3)
             {
@@ -347,12 +336,10 @@ public class Endimon
             int rand = Random.Range(1, 101);
             if(rand < 50)
             {
-                Debug.Log("Sleep attack missed");
                 return -1;
             }
             else
             {
-                Debug.Log("Sleep attack hit");
                 AudioSource.PlayClipAtPoint(Audio.Sleep, GameObject.Find("MainCamera").transform.position);
                 Target.AddStatusEffect(true, StatusEffects.Sleep, 1);
                 return 1;
@@ -422,7 +409,7 @@ public class Endimon
         //Applies a damage buff that lasts a turn
         else if(UsedMove.GetMoveName() == "Heating Up")
         {
-            //Doubles the damage of the attack (final calculation)
+            //Doubles the damage of the attack
             AudioSource.PlayClipAtPoint(Audio.AttackUp, GameObject.Find("MainCamera").transform.position);
             //If the Endimon using this uses it on itself then it needs an extra turn otherwise it will fall off right after
             if (Target.GetName() == Attacker.GetName())
@@ -452,7 +439,6 @@ public class Endimon
         }
         else
         {
-            Debug.Log("Error, special attack doesn't exist");
             return -1;
         }
     }
@@ -552,9 +538,10 @@ public class Endimon
     public Sprite GetEndimonLargeImage() { return EndimonLargeImage; }
     public StatusEffects GetEndimonPostiveEffect() { return Statuses[0]; }
     public StatusEffects GetEndimonNegativeEffect() { return Statuses[1]; }
+    public bool GetDead() { return EndimonDead; }
 
     //SETTERS (Selected stats need to be modified mid battle)
     public void SetDefense(int num) { EndimonDefense += num; }
     public void SetActiveNumber(int i) { ActiveNumber = i; }
-
+    public void SetDead() { EndimonDead = true; }
 }

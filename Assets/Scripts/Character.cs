@@ -26,7 +26,6 @@ public class Character
             if(PlayerTeam[i] != ActivePlayerEndimon1 && PlayerTeam[i] != ActivePlayerEndimon2 && IsEndimonAlive(PlayerTeam[i]))
             {
                 NewEndimon = PlayerTeam[i];
-                Debug.Log("Now putting in " + PlayerTeam[i].GetName() + " in place for " + e.GetName());
                 break;
             }
         }
@@ -34,7 +33,6 @@ public class Character
         //All the team's Endimon must be dead so there is nothing to give back
         if(NewEndimon == null)
         {
-            Debug.Log("We couldn't find any other Endimon to put in");
             return 0;
         }
 
@@ -43,11 +41,9 @@ public class Character
         {
             if(ActivePlayerEndimon1.GetEndimonTurnTaken() == true)
             {
-                Debug.Log("We determined that this Endimon did already go that we replacing");
                 NewEndimon.SetTurnStatus(true);
             }
             NewEndimon.SetActiveNumber(ActivePlayerEndimon1.GetActiveNumber());
-            Debug.Log("The Endimon being placed in is in box: " + NewEndimon.GetActiveNumber());
             ActivePlayerEndimon1 = NewEndimon;
             return 1;
         }
@@ -55,11 +51,9 @@ public class Character
         {
             if (ActivePlayerEndimon2.GetEndimonTurnTaken() == true)
             {
-                Debug.Log("We determined that this Endimon did already go that we replacing");
                 NewEndimon.SetTurnStatus(true);
             }
             NewEndimon.SetActiveNumber(ActivePlayerEndimon2.GetActiveNumber());
-            Debug.Log("The Endimon being placed in is in box: " + NewEndimon.GetActiveNumber());
             ActivePlayerEndimon2 = NewEndimon;
             return 2;
         }
@@ -78,6 +72,7 @@ public class Character
             {
                 e.SetTurnStatus(false);
             }
+            ActivePlayerEndimon1.SetTurnStatus(false);
             ActivePlayerEndimon1 = e;
             ActivePlayerEndimon1.SetActiveNumber(0);
         }
@@ -91,6 +86,7 @@ public class Character
             {
                 e.SetTurnStatus(false);
             }
+            ActivePlayerEndimon2.SetTurnStatus(false);
             ActivePlayerEndimon2 = e;
             ActivePlayerEndimon2.SetActiveNumber(1);
         }
@@ -190,6 +186,7 @@ public class Character
         }
     }
 
+    //Adds an item to the array of items the player has
     public void AddItem(Item theItem)
     {
         for(int i = 0; i < PlayerItems.Length; i++)
@@ -202,6 +199,7 @@ public class Character
         }
     }
 
+    //Removes an item from the array (Plucks first one)
     public void RemoveItem()
     {
         for(int i = PlayerItems.Length-1; i > -1; i--)
@@ -214,11 +212,13 @@ public class Character
         }
     }
 
+    //Removes an item based upon the positon in the array
     public void RemoveItem(int pos)
     {
         PlayerItems[pos] = null;
     }
 
+    //Removes an item based upon which item it is
     public void RemoveItem(Item item)
     {
         for(int i = 0; i < 3; i++)
@@ -231,6 +231,7 @@ public class Character
         }
     }
 
+    //See if the player has a full list of items or not
     public int CheckPlayerItems()
     {
         int counter = 0;
@@ -244,23 +245,27 @@ public class Character
         return counter;
     }
 
+    //Grab an item from the player's list of items
     public Item GetAnItem(int index)
     {
         return PlayerItems[index];
     }
 
+    //Player has chose to use an item during battle
     public void UseItem(Item UsedItem, Endimon TargettedEndimon, BattleController bc)
     {
+        //If there is a duration, we will apply the particls, play audio, and put effect on
         if (UsedItem.GetItemDuration() > 0)
         {
             AudioClip itemClip = Item.DetermineAudioClip(UsedItem.GetItemName());
             AudioSource.PlayClipAtPoint(itemClip, GameObject.Find("MainCamera").transform.position);
-            Debug.Log("Endimon: " + TargettedEndimon.GetName() + " hit by " + UsedItem.GetItemName() + " for " + +UsedItem.GetItemDuration() + " turns");
             TargettedEndimon.AddStatusEffect(!UsedItem.GetUsabilityTeam(), UsedItem.GetEffect(), UsedItem.GetItemDuration());
         }
-        //Otherwise this is an instant effect so put those here
+
+        //Otherwise this is an instant effect so no overtime particles needed
         else
         {
+            //Small health restore will give 25% of HP back
             if(UsedItem.GetEffect() == Endimon.StatusEffects.HealthRestore)
             {
                 //We will hurt the target with negative damage to heal
@@ -273,6 +278,8 @@ public class Character
                 bc.SpawnText("Healing", HealthToRestore * -1, TargettedEndimon);
                 TargettedEndimon.TakeDamage(HealthToRestore);
             }
+
+            //Large health restore will give 50% of HP back and remove 15 defense
             else if(UsedItem.GetEffect() == Endimon.StatusEffects.LargeHealthRestore)
             {
                 //We will hurt the target with negative damage to heal

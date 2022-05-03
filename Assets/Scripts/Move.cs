@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-//Is the base class for a move, SpecialMove is a subclass
+//Base class for a damaging move an Endimon can do
 public class Move
 {
     internal string MoveName;                   //Name of the move

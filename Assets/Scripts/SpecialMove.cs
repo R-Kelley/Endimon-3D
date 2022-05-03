@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
+//Class is a sub-class of move that has extra properties (and does no real damage)
 public class SpecialMove : Move
 {
     private string MoveDescription; //What does the special move do

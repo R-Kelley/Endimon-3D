@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+//Class is a static calling class that can be used to grab audio clips wherever needed
 public static class Audio
 {
-    //*WE HAVE TO INCLUDE AUDIO DURING A TURN FOR STATUS EFFECTS AS WELL
-    //WE SHOULD HAVE A INTRO CAMERA EFFECT TO START BY LISTING THE STATUS EFFECTS THEY ARE UNDER WITH NOISES
+
     //Menu Audio
     public static AudioClip ButtonHover = Resources.Load("Audio/ButtonHover", typeof(AudioClip)) as AudioClip;
     public static AudioClip ButtonClick = Resources.Load("Audio/ButtonClick", typeof(AudioClip)) as AudioClip;

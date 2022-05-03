@@ -2,26 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//Stub class:
-//This class will be imported into BattleController and methods will be used to move the camera during specific times
-//This class will have running functions during specific phases of the battle and will sync up to display moves and other actions during turns
-
+//This class is used to control the camera for the main combat scene
+//The camera has multiple states that will either control it on its on or do something specific that the code requires of it
 public class CameraController : MonoBehaviour
 {
-    public Camera MainCamera;       //Camera to move (assigned in editor)
-    private static string GameStatus;
-    private static float Timer;
-    private float Speed = 3.5f;
-    private static bool ZoomedIn;
-    private int rand;
-    private static Endimon MainEndimon;
+    public Camera MainCamera;           //Camera to move (assigned in editor)
+    private static string GameStatus;   //The status of the game (Used to determine what it should be doing)
+    private static float Timer;         //Used to identify camera switches if its in a free state
+    private float Speed = 3.5f;         //Speed of movement
+    private static bool ZoomedIn;       //Determines if the camera is currently zoomed in on a specific Endimon
+    private int rand;                   //Random int
+    private static Endimon MainEndimon; //Endimon that is being focused on
 
+    //Location and Rotation of camera
     private Vector3 Location;
     private Quaternion Rotation;
 
+    //Holds all Locations/Rotations of Endimon on the field
     private Vector3[] EndimonLocations;
     private Quaternion[] EndimonRotations;
 
+    //Holds values for where it should relocate based upon certain actions
     private Vector3 PanLocationLeft;
     private Quaternion PanRotationLeft;
     private Vector3 PanLocationRight;
@@ -30,12 +31,10 @@ public class CameraController : MonoBehaviour
     private Quaternion PanRotationDown;
     private Vector3 GlobalLocation;
 
-    //Probably want saved positions on the map to go to
-
-
-    // Start is called before the first frame update
+    
     void Start()
     {
+        //Assign starting values
         GameStatus = "PlayerAwaitTurn";
         Timer = 8;
         ZoomedIn = true;    //Just for set-up purposes
@@ -65,7 +64,7 @@ public class CameraController : MonoBehaviour
     //Keep the camera moving or in the spot that it should be based upon the parameters
     void Update()
     {   
-        //Zoom in on a random Endimon when the timer hits 0
+        //Zoom in on a random Endimon when the timer hits 0, otherwise choose a way to pan the screen
         if (GameStatus == "PlayerAwaitTurn" && Timer > 0)
         {
             if(ZoomedIn == true)
@@ -89,6 +88,8 @@ public class CameraController : MonoBehaviour
                 ZoomedIn = false;
                     
             }
+
+            //Choose the direction of the camera transform, corresponds with pan location
             else
             {
                 if(rand == 0 )
@@ -105,6 +106,7 @@ public class CameraController : MonoBehaviour
                 }
             }
         }
+
         //When the player wins, zoom in on the Endimon they have on the field
         else if(GameStatus == "Winner")
         {
@@ -117,6 +119,8 @@ public class CameraController : MonoBehaviour
             MainCamera.transform.position = new Vector3(-13.23f, 26.17f, 47f);
             MainCamera.transform.rotation = Quaternion.Euler(20, 90, 0);
         }
+
+        //If the pan is over, let's zoom in on a random Endimon
         else if(GameStatus == "PlayerAwaitTurn" && Timer < 0 && Timer > -6)
         {
             if(ZoomedIn == false)
@@ -127,6 +131,8 @@ public class CameraController : MonoBehaviour
                 ZoomedIn = true;
             }
         }
+
+        //If the game status is either attacking or defending, we will zoom in on the specific Endimon
         else if((GameStatus == "Attacking" || GameStatus == "Defending") && MainEndimon != null)
         {
             int value = MainEndimon.GetActiveNumber();
@@ -144,12 +150,15 @@ public class CameraController : MonoBehaviour
             MainCamera.transform.rotation = Quaternion.Euler(EndimonRotations[value].x, EndimonRotations[value].y, EndimonRotations[value].z);
             MainEndimon = null; //Eliminate this code running many times in Update
         }
+
+        //If the status is globals, we zoom out to watch the casting of the particles
         else if(GameStatus == "Globals")
         {
             MainCamera.transform.position = GlobalLocation;
             MainCamera.transform.rotation = Quaternion.Euler(PanRotationLeft.x, PanRotationLeft.y, PanRotationLeft.z);
         }
 
+        //If the timer zooms past -6, we will go back to a pan mode instead of zooming in
         else if(Timer < -6)
         {
             Timer = 8f;
@@ -157,7 +166,7 @@ public class CameraController : MonoBehaviour
         Timer -= Time.deltaTime;
     }
 
-    //Allows any part of the game to change the camera view
+    //Allows any part of the game to change the camera view (Resets timer)
     public static void SetGameStatus(string stat, Endimon e)
     {
         GameStatus = stat;

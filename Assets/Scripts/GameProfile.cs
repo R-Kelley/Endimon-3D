@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 //Class is a global data structure to keep track of information needed across scenes
@@ -9,6 +7,7 @@ public static class GameProfile
     public static AI CurrentAI;                     //The AI being used for the battle
     public static int HighestFinishedLevel;         //Highest completed camapaign battle (1-6)
     public static bool PlayingACampaignBattle;      //If the player has picked to play a campaign battle
+    public static int CurrentCampaignBattle;        //The level the player is playing against
 
     //Premade Objects to display
     public static Endimon[] Roster;                 //Array of the entire Endimon roster
@@ -102,6 +101,7 @@ public static class GameProfile
         return null;
     }
 
+    //Called to make an instance of an actual item
     public static Item CreateItemInstance(int selection) 
     {
         if (selection == 0)
@@ -232,11 +232,11 @@ public static class GameProfile
     public static void ConvertTrainerToAI(int TrainerIndex)
     {
         CurrentAI = new AI(Trainers[TrainerIndex].GetTrainerDifficulty());
-        CurrentAI.SetAIName(Trainers[TrainerIndex].GetTrainerName());
         CurrentAI.SetAITeam(Trainers[TrainerIndex].GetTrainerTeam());
         CurrentAI.SetAIItems(Trainers[TrainerIndex].GetTrainerItems());
     }
 
+    //Makes the team of Endimon and returns it
     public static Endimon[] CreateTeam(Endimon e1, Endimon e2, Endimon e3, Endimon e4)
     {
         Endimon[] newTeam = new Endimon[4];

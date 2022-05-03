@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 //This class controls the functions of the Main Menu UI
-//This should be the first screen the user sees upon loading the game (Fix GameProfile setup otherwise!)
+//This should be the first screen the user sees upon loading the game
 public class MainMenuController : MonoBehaviour
 {
     public GameObject HowToPlay;        //How to Play Screen

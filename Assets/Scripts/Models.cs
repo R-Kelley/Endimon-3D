@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+//Class specifies the 10 different models for the Endimon in the game
 public class Models : MonoBehaviour
 {
     public GameObject Corerosion;
