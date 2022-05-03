@@ -1,2 +1,2 @@
 # Endimon-3D
-To access the game, you should only need to download the files in "Endimon 3D Build". You will then click on the executable from there to be able to play the game.
+Download via a zip file and then access the executable in the "Endimon 3D Build" folder. In case of saving storage, keeping that build folder should be the only requirement to running the game.
